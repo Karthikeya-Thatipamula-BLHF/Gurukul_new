@@ -1,0 +1,30 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install dependencies required by the dependency exporter
+RUN pip install --no-cache-dir \
+    python-dotenv \
+    pymongo \
+    pyttsx3 \
+    PyMuPDF \
+    fastapi \
+    uvicorn \
+    pydantic \
+    requests \
+    langchain \
+    motor \
+    prophet \
+    statsmodels \
+    google-generativeai \
+    agentops \
+    easyocr
+
+# Copy the dependency exporter script
+COPY dependency_exporter.py /app/
+
+# Expose the port the exporter runs on
+EXPOSE 9101
+
+# Run the exporter
+CMD ["python", "dependency_exporter.py"]

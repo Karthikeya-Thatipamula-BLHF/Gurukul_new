@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Env files
+.env
+.env.*
+
+# Virtual environments
+.venv/
+venv/
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build caches
+*.log
+*.sqlite3
+
+# Data caches / local stores not needed in images
+knowledge_store/
+wikipedia_cache/
+.ipynb_checkpoints/
+
+# Node modules (if any subprojects)
+node_modules/
+
+# Misc
+*.tmp
+*.swp
+

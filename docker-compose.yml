@@ -1,0 +1,367 @@
+version: "3.8"
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:7.0
+    container_name: gurukul-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./monitoring/mongodb-init:/docker-entrypoint-initdb.d
+    environment:
+      - MONGO_INITDB_DATABASE=gurukul
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis service for caching
+  redis:
+    image: redis:7-alpine
+    container_name: gurukul-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Base Backend Service
+  base-backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-base-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: python -m uvicorn Base_backend.main:app --host 0.0.0.0 --port 8000
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Chatbot API Service
+  chatbot-api:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-chatbot-api
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8001
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn dedicated_chatbot_service.chatbot_api:app --host 0.0.0.0 --port 8001
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Financial Simulator Service
+  financial-simulator:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-financial-simulator
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8002
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn Financial_simulator.api:app --host 0.0.0.0 --port 8002
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Memory Management Service
+  memory-management:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-memory-management
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8003
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn memory_management.memory_api:app --host 0.0.0.0 --port 8003
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/memory/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Akash Service
+  akash-service:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-akash-service
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8004
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn akash.api:app --host 0.0.0.0 --port 8004
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Subject Generation Service
+  subject-generation:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-subject-generation
+    restart: unless-stopped
+    ports:
+      - "8005:8005"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8005
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn subject_generation.api:app --host 0.0.0.0 --port 8005
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Karthikeya Service
+  karthikeya-service:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-karthikeya-service
+    restart: unless-stopped
+    ports:
+      - "8006:8006"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8006
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn Karthikeya.api:app --host 0.0.0.0 --port 8006
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # TTS Service
+  tts-service:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-tts-service
+    restart: unless-stopped
+    ports:
+      - "8007:8007"
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password}
+      - PORT=8007
+      - TTS_ENABLED=true
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-backend:
+        condition: service_healthy
+    command: python -m uvicorn tts_service.tts:app --host 0.0.0.0 --port 8007
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./new frontend
+      dockerfile: Dockerfile
+    container_name: gurukul-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_CHAT_API_BASE_URL=http://localhost:8001
+      - VITE_FINANCIAL_API_BASE_URL=http://localhost:8002
+      - VITE_AGENT_API_BASE_URL=http://localhost:8005
+      - VITE_UNIGURU_API_BASE_URL=http://localhost:8000
+      - VITE_ENABLE_ANALYTICS=false
+      - VITE_ENABLE_ERROR_REPORTING=true
+    depends_on:
+      base-backend:
+        condition: service_healthy
+      chatbot-api:
+        condition: service_healthy
+      financial-simulator:
+        condition: service_healthy
+    networks:
+      - gurukul-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: gurukul-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+    networks:
+      - gurukul-network
+
+networks:
+  gurukul-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local

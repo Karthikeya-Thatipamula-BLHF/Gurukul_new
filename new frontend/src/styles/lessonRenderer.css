@@ -1,0 +1,179 @@
+/* Lesson Live Renderer Styles */
+
+/* Custom scrollbar for lesson content */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 153, 51, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 153, 51, 0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 153, 51, 0.5);
+}
+
+/* Lesson content animations */
+.lesson-live-renderer {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.lesson-stream-renderer {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced cursor animation */
+.lesson-live-renderer .animate-pulse,
+.lesson-stream-renderer .animate-pulse {
+  animation: lessonCursor 1.2s infinite;
+}
+
+@keyframes lessonCursor {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.3;
+  }
+}
+
+/* Smooth text rendering */
+.lesson-content {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enhanced prose styling for lesson content */
+.lesson-content .prose {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.lesson-content .prose h1,
+.lesson-content .prose h2,
+.lesson-content .prose h3,
+.lesson-content .prose h4,
+.lesson-content .prose h5,
+.lesson-content .prose h6 {
+  color: rgb(252, 211, 77); /* amber-300 */
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.lesson-content .prose p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.lesson-content .prose ul,
+.lesson-content .prose ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.lesson-content .prose li {
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lesson-content .prose strong {
+  color: rgb(252, 211, 77); /* amber-300 */
+  font-weight: 600;
+}
+
+.lesson-content .prose em {
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+/* Control buttons styling */
+.lesson-live-renderer button,
+.lesson-stream-renderer button {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lesson-live-renderer button:hover,
+.lesson-stream-renderer button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading states */
+.lesson-content-loading {
+  position: relative;
+}
+
+.lesson-content-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 153, 51, 0.1),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .lesson-content {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lesson-content {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  
+  .lesson-live-renderer,
+  .lesson-stream-renderer {
+    padding: 0.5rem;
+  }
+}

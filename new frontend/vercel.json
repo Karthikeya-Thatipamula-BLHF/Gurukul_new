@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "name": "gurukul-frontend",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_BASE_API_URL": "@vite_base_api_url",
+    "VITE_CHAT_API_URL": "@vite_chat_api_url",
+    "VITE_FINANCIAL_API_URL": "@vite_financial_api_url",
+    "VITE_MEMORY_API_URL": "@vite_memory_api_url",
+    "VITE_AKASH_API_URL": "@vite_akash_api_url",
+    "VITE_SUBJECT_API_URL": "@vite_subject_api_url",
+    "VITE_KARTHIKEYA_API_URL": "@vite_karthikeya_api_url",
+    "VITE_TTS_API_URL": "@vite_tts_api_url"
+  },
+  "build": {
+    "env": {
+      "VITE_BASE_API_URL": "@vite_base_api_url",
+      "VITE_CHAT_API_URL": "@vite_chat_api_url",
+      "VITE_FINANCIAL_API_URL": "@vite_financial_api_url",
+      "VITE_MEMORY_API_URL": "@vite_memory_api_url",
+      "VITE_AKASH_API_URL": "@vite_akash_api_url",
+      "VITE_SUBJECT_API_URL": "@vite_subject_api_url",
+      "VITE_KARTHIKEYA_API_URL": "@vite_karthikeya_api_url",
+      "VITE_TTS_API_URL": "@vite_tts_api_url"
+    }
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}

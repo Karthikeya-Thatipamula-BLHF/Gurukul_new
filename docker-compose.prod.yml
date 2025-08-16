@@ -1,0 +1,251 @@
+version: '3.8'
+
+services:
+  # MongoDB and Redis as internal services (no published ports)
+  mongodb:
+    image: mongo:7.0
+    container_name: gurukul-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=gurukul
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    networks:
+      - gurukul-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: gurukul-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    networks:
+      - gurukul-network
+
+  # Backend services do not publish ports; exposed via nginx only
+  base-backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-base-backend
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8000
+    depends_on:
+      - mongodb
+      - redis
+    command: python -m uvicorn Base_backend.main:app --host 0.0.0.0 --port 8000
+    networks:
+      - gurukul-network
+
+  chatbot-api:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-chatbot-api
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8001
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn dedicated_chatbot_service.chatbot_api:app --host 0.0.0.0 --port 8001
+    networks:
+      - gurukul-network
+
+  financial-simulator:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-financial-simulator
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8002
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn Financial_simulator.api:app --host 0.0.0.0 --port 8002
+    networks:
+      - gurukul-network
+
+  memory-management:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-memory-management
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8003
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn memory_management.memory_api:app --host 0.0.0.0 --port 8003
+    networks:
+      - gurukul-network
+
+  akash-service:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-akash-service
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8004
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn akash.api:app --host 0.0.0.0 --port 8004
+    networks:
+      - gurukul-network
+
+  subject-generation:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-subject-generation
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8005
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn subject_generation.api:app --host 0.0.0.0 --port 8005
+    networks:
+      - gurukul-network
+
+  karthikeya-service:
+    build:
+      context: ./Backend
+    dockerfile: Dockerfile
+    container_name: gurukul-karthikeya-service
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8006
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn Karthikeya.api:app --host 0.0.0.0 --port 8006
+    networks:
+      - gurukul-network
+
+  tts-service:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: gurukul-tts-service
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    environment:
+      - MONGODB_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/gurukul?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8007
+      - TTS_ENABLED=true
+    depends_on:
+      - mongodb
+      - redis
+      - base-backend
+    command: python -m uvicorn tts_service.tts:app --host 0.0.0.0 --port 8007
+    networks:
+      - gurukul-network
+
+  # Frontend served by Nginx
+  frontend:
+    build:
+      context: ./new frontend
+      dockerfile: Dockerfile
+    container_name: gurukul-frontend
+    restart: unless-stopped
+    environment:
+      - VITE_API_BASE_URL=http://nginx
+      - VITE_CHAT_API_BASE_URL=http://nginx
+      - VITE_FINANCIAL_API_BASE_URL=http://nginx
+      - VITE_AGENT_API_BASE_URL=http://nginx
+      - VITE_UNIGURU_API_BASE_URL=http://nginx
+    depends_on:
+      - base-backend
+      - chatbot-api
+      - financial-simulator
+    networks:
+      - gurukul-network
+
+  # Nginx exposes the app to the outside
+  nginx:
+    image: nginx:alpine
+    container_name: gurukul-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # Uncomment when TLS certs are provided
+      # - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+    networks:
+      - gurukul-network
+
+networks:
+  gurukul-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+

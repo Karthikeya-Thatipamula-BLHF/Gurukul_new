@@ -1,0 +1,51 @@
+services:
+  # Main Backend Service
+  - type: web
+    name: gurukul-backend
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd Backend
+      pip install --upgrade pip
+      pip install -r requirements-production.txt
+    startCommand: |
+      cd Backend
+      python main.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MONGODB_URL
+        fromDatabase:
+          name: gurukul-mongodb
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: gurukul-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+    healthCheckPath: /health
+    
+databases:
+  # MongoDB Database
+  - name: gurukul-mongodb
+    databaseName: gurukul
+    user: gurukul_user
+    plan: starter
+    
+  # Redis Cache
+  - name: gurukul-redis
+    plan: starter

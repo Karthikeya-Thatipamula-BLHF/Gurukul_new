@@ -1,0 +1,29 @@
+groups:
+- name: dependency-alerts
+  rules:
+  - alert: MissingDependency
+    expr: gurukul_dependency_status == 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Missing dependency detected"
+      description: "Service {{ $labels.service }} is missing the {{ $labels.dependency }} dependency."
+
+  - alert: ServiceDependencyUnhealthy
+    expr: gurukul_service_dependency_health == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service dependency health critical"
+      description: "Service {{ $labels.service }} has missing dependencies and may not function correctly."
+
+  - alert: MultipleServiceDependencyIssues
+    expr: sum(gurukul_service_dependency_health == 0) > 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Multiple services have dependency issues"
+      description: "{{ $value }} services have missing dependencies. This may indicate a system-wide installation problem."

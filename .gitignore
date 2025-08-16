@@ -1,0 +1,111 @@
+﻿# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API Keys and Secrets
+**/api_keys.txt
+**/secrets.txt
+**/.env.local
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Large files (over 50MB)
+*.glb
+*.gltf
+*.fbx
+*.obj
+*.3ds
+*.max
+*.blend
+
+# Archive files
+*.rar
+*.zip
+*.7z
+*.tar.gz
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+
+# Backend generated artifacts
+Backend/subject_generation/knowledge_store/
+Backend/subject_generation/wikipedia_cache/
+Backend/subject_generation/*.log
+Backend/**/outputs/
+Backend/**/temp/
+Backend/**/tts_outputs/
+
+# Local data
+Backend/**/data/
+Backend/**/downloads/
+
+# Archive (kept but not built)
+Backend/_archive/
+
+
+
+Backend/subject_generation/*.log
+Backend/**/outputs/
+Backend/**/temp/
+Backend/**/tts_outputs/
+Backend/**/downloads/
+
+# Archive (kept but not built)
+Backend/_archive/

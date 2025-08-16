@@ -1,0 +1,20 @@
+{
+  "models": {
+    "primary": "llama2",
+    "alternatives": [
+      "mistral",
+      "codellama",
+      "neural-chat"
+    ]
+  },
+  "settings": {
+    "temperature": 0.7,
+    "max_tokens": 500,
+    "top_p": 0.9
+  },
+  "car_assistant": {
+    "system_prompt": "You are an expert Indian automotive consultant...",
+    "max_context_vehicles": 100,
+    "response_timeout": 30
+  }
+}

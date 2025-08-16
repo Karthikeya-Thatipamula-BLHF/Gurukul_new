@@ -1,0 +1,62 @@
+# FastAPI Enhanced Vehicle Data Aggregation System Requirements
+
+# Core FastAPI Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Async HTTP Client
+aiohttp==3.9.1
+aiofiles==23.2.0
+
+# Web Scraping
+beautifulsoup4==4.12.2
+lxml==4.9.3
+selenium==4.15.0
+webdriver-manager==4.0.1
+
+# Data Processing and Analysis
+pandas==2.1.1
+numpy==1.24.3
+
+# JSON and CSV handling
+ujson==5.8.0
+python-multipart==0.0.6
+
+# Utility Libraries
+python-dotenv==1.0.0
+click==8.1.7
+
+# Date and Time
+python-dateutil==2.8.2
+
+# Logging
+colorlog==6.7.0
+
+# HTTP and API utilities
+httpx==0.25.2
+requests==2.31.0
+
+# File handling
+pathlib  # Built-in
+os  # Built-in
+json  # Built-in
+csv  # Built-in
+
+# Async utilities
+asyncio  # Built-in
+concurrent.futures  # Built-in
+
+# Data structures
+collections  # Built-in
+statistics  # Built-in
+hashlib  # Built-in
+re  # Built-in
+random  # Built-in
+typing  # Built-in
+datetime  # Built-in
+logging  # Built-in
+
+# Optional: For advanced features
+# plotly==5.17.0  # For data visualization
+# jinja2==3.1.2   # For templating if needed
