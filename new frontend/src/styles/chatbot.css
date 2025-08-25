@@ -466,3 +466,455 @@ img.emoji {
 .message-bubble:hover .message-timestamp {
   opacity: 0.8;
 }
+
+/* ===== SIMPLE MOBILE LAYOUT STYLES ===== */
+@media (max-width: 767px) {
+  /* Mobile Container */
+  .mobile-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Mobile Header */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  
+  .mobile-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    font-family: "Nunito", sans-serif;
+  }
+  
+  .mobile-menu-btn,
+  .mobile-icon-btn {
+    padding: 8px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .mobile-menu-btn:hover,
+  .mobile-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Mobile Chat Content */
+  .mobile-chat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: calc(100vh - 60px); /* Account for header height */
+    height: calc(100dvh - 60px);
+  }
+  
+  .mobile-loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  
+  /* Mobile Messages */
+  .mobile-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    padding-bottom: 120px; /* Space for fixed input area */
+    scroll-behavior: auto; /* Remove smooth scrolling that can cause issues */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; /* Prevent scroll chaining */
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px); /* Account for header and input */
+    height: calc(100dvh - 200px);
+  }
+  
+  .mobile-messages::-webkit-scrollbar {
+    width: 3px;
+  }
+  
+  .mobile-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .mobile-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+  
+  .mobile-message {
+    display: flex;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.3s ease-out;
+  }
+  
+  .mobile-message.user {
+    justify-content: flex-end;
+  }
+  
+  .mobile-message.assistant,
+  .mobile-message.error {
+    justify-content: flex-start;
+  }
+  
+  .mobile-message-bubble {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .mobile-message.user .mobile-message-bubble {
+    background: linear-gradient(135deg, rgba(255, 153, 51, 0.25), rgba(255, 153, 51, 0.15));
+    border: 1px solid rgba(255, 153, 51, 0.3);
+    color: white;
+  }
+  
+  .mobile-message.assistant .mobile-message-bubble {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+  
+  .mobile-message.error .mobile-message-bubble {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: white;
+  }
+  
+  .mobile-message-text {
+    font-family: "Nunito", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+  
+  .mobile-tts-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-tts-btn:hover {
+    opacity: 1;
+    background: rgba(255, 153, 51, 0.2);
+  }
+  
+  .mobile-model-badge {
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(255, 153, 51, 0.3), rgba(255, 153, 51, 0.1));
+    border: 1px solid rgba(255, 153, 51, 0.3);
+    color: white;
+    display: inline-block;
+  }
+  
+  /* Mobile Input Area */
+  .mobile-input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    z-index: 20;
+  }
+  
+  .mobile-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .mobile-model-select {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    min-width: 70px;
+    transition: all 0.3s duration-300;
+  }
+  
+  .mobile-model-select:focus {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .mobile-model-select option {
+    background: #1E1E28;
+    color: white;
+  }
+  
+  .mobile-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .mobile-status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .mobile-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 10px 14px;
+    min-height: 48px;
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-input-container:focus-within {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+  }
+  
+  .mobile-attach-btn {
+    padding: 8px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  
+  .mobile-attach-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .mobile-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-family: "Nunito", sans-serif;
+    line-height: 1.4;
+    resize: none;
+    outline: none;
+    min-height: 22px;
+    max-height: 44px; /* Reduce max height to prevent internal scrolling */
+    overflow-y: hidden; /* Hide scrollbar to prevent internal scroll */
+    padding: 0;
+    width: 100%;
+    vertical-align: top;
+  }
+  
+  .mobile-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .mobile-textarea::-webkit-scrollbar {
+    width: 2px;
+  }
+  
+  .mobile-textarea::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .mobile-textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+  }
+  
+  .mobile-send-btn {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+  }
+  
+  .mobile-send-btn.active {
+    background: rgba(255, 153, 51, 0.7);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(255, 153, 51, 0.3);
+    color: white;
+  }
+  
+  .mobile-send-btn.active:hover {
+    background: rgba(255, 153, 51, 0.8);
+    transform: scale(1.05);
+  }
+  
+  .mobile-send-btn.disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+  }
+  
+  /* Mobile Menu */
+  .mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 16px 16px;
+  }
+  
+  .mobile-menu-content {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .mobile-speak-all-btn {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: rgba(255, 153, 51, 0.2);
+    border: 1px solid rgba(255, 153, 51, 0.3);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 12px;
+  }
+  
+  .mobile-speak-all-btn:hover {
+    background: rgba(255, 153, 51, 0.3);
+  }
+  
+  .mobile-speak-all-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Mobile animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ===== MOBILE CHATGPT-INSPIRED ENHANCEMENTS ===== */
+/* Mobile-only typing indicator and basic enhancements */
+@media (max-width: 767px) {
+  
+  /* Mobile typing indicator enhancements */
+  .typing-indicator {
+    padding: 8px 0;
+  }
+  
+  .typing-indicator span {
+    width: 10px;
+    height: 10px;
+    margin: 0 3px;
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+  
+  /* Mobile touch targets */
+  button, .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile text selection */
+  ::selection {
+    background-color: rgba(255, 153, 51, 0.3);
+    color: white;
+  }
+  
+  ::-moz-selection {
+    background-color: rgba(255, 153, 51, 0.3);
+    color: white;
+  }
+  
+  /* Mobile input zoom prevention */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+}

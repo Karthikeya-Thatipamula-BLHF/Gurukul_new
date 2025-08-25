@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import SideBarAltUse from "./SideBarAltUse";
+import MobileBottomNavigation from "./MobileBottomNavigation";
 import PageLoader from "./PageLoader";
 import { LoaderProvider, useLoader } from "../context/LoaderContext";
 import { VideoProvider, useVideo } from "../context/VideoContext";
@@ -29,19 +30,31 @@ function LayoutContent({ children }) {
     saveCurrentPath();
   }, [location.pathname]);
 
+  // Collapse sidebar on small screens and expand on larger screens
+  // On mobile, we'll use the bottom navigation instead
+  useEffect(() => {
+    const handleResize = () => {
+      const isSmall = window.innerWidth < 768; // md breakpoint
+      setSidebarCollapsed(isSmall);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
       {show && <PageLoader />}
 
       {/* Main Layout Container with PNG background */}
       <div
-        className="min-h-screen h-screen flex flex-col overflow-hidden relative"
+        className="min-h-screen flex flex-col overflow-x-hidden relative"
         style={{
           backgroundImage: 'url(/bg/bg.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
+          backgroundAttachment: 'scroll'
         }}
       >
         {/* Session Tracker - Always active when user is logged in */}
@@ -49,37 +62,20 @@ function LayoutContent({ children }) {
 
         {/* Content wrapper with proper z-index */}
         <div className="relative z-10 flex flex-col h-full">
-          {/* Header - Only show when sidebar is not collapsed */}
-          {!sidebarCollapsed && (
-            <Header
-              onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-              sidebarCollapsed={sidebarCollapsed}
-            />
-          )}
-
-          {/* Collapsed Sidebar at Top - Only show when sidebar is collapsed */}
-          {!isHome && sidebarCollapsed && (
-            <div className="w-full">
-              <Sidebar
-                collapsed={true}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-              />
-            </div>
-          )}
+          <Header
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            sidebarCollapsed={sidebarCollapsed}
+          />
 
           {/* Main area with sidebar and content */}
           <div
             className={`flex flex-1 ${
-              isHome
-                ? "h-full"
-                : sidebarCollapsed
-                ? "h-[calc(100vh-40px)]"
-                : "h-[calc(100vh-70px)]"
-            } overflow-hidden p-2`}
+              isHome ? "h-auto md:h-full" : "h-auto md:h-[calc(100dvh-70px)]"
+            } md:overflow-hidden overflow-y-auto p-2`}
           >
-            {/* Sidebar - toggleable width (hidden on home) */}
+            {/* Desktop Sidebar - toggleable width (hidden on home and mobile) */}
             {!isHome && !sidebarCollapsed && (
-              <div className="transition-all duration-300 ease-in-out flex-shrink-0 w-[240px] h-auto">
+              <div className="hidden md:block transition-all duration-300 ease-in-out flex-shrink-0 w-[240px] h-auto">
                 {showVideoInSidebar ? (
                   <SideBarAltUse
                     generatedVideo={generatedVideo}
@@ -96,17 +92,22 @@ function LayoutContent({ children }) {
             )}
             {/* Main Content Area */}
             <div
-              className={`flex-1 overflow-hidden ${
-                sidebarCollapsed ? "w-full px-0 py-2" : "p-2"
+              className={`flex-1 md:overflow-hidden overflow-y-auto ${
+                sidebarCollapsed ? "w-full px-0 py-2" : "md:p-2 p-0"
               }`}
             >
-              <div className="w-full h-full">{children}</div>
+              <div className="w-full h-full main-content">{children}</div>
             </div>
           </div>
         </div>
 
         {/* Global Pinned Avatar - Floats across all authenticated pages */}
         <GlobalPinnedAvatar />
+
+        {/* Mobile Bottom Navigation - Only show on mobile when not on home */}
+        {!isHome && (
+          <MobileBottomNavigation />
+        )}
 
 
       </div>

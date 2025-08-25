@@ -33,14 +33,14 @@ export default function GlassButton({
       case "primary":
         return {
           ...baseStyles,
-          background: "linear-gradient(135deg, rgba(255, 140, 0, 0.4) 0%, rgba(255, 165, 0, 0.3) 50%, rgba(255, 69, 0, 0.2) 100%)",
+          background: "linear-gradient(135deg, #FF8C00 0%, #FFA500 50%, #FF4500 100%)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
-          border: "2px solid rgba(255, 140, 0, 0.6)",
-          boxShadow: "0 8px 32px rgba(255, 140, 0, 0.25), 0 0 0 1px rgba(255, 165, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
+          border: "2px solid #FF8C00",
+          boxShadow: "0 8px 32px rgba(255, 140, 0, 0.6), 0 0 0 1px rgba(255, 165, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
           color: "#FFFFFF",
           fontWeight: 700,
-          textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+          textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
         };
       case "accent":
         return {
@@ -86,13 +86,13 @@ export default function GlassButton({
       scale: 1.08,
       boxShadow:
         variant === "primary"
-          ? "0 12px 40px rgba(255, 140, 0, 0.5), 0 0 20px rgba(255, 165, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.6)"
+          ? "0 12px 40px rgba(255, 140, 0, 0.9), 0 0 30px rgba(255, 165, 0, 1), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
           : variant === "accent"
           ? "0 12px 40px rgba(93, 0, 30, 0.5), 0 0 20px rgba(160, 82, 45, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.6)"
           : "0 12px 40px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
       background:
         variant === "primary"
-          ? "linear-gradient(135deg, rgba(255, 140, 0, 0.6) 0%, rgba(255, 165, 0, 0.5) 50%, rgba(255, 69, 0, 0.4) 100%)"
+          ? "linear-gradient(135deg, #FFB84D 0%, #FFCC66 50%, #FF6633 100%)"
           : variant === "accent"
           ? "linear-gradient(135deg, rgba(93, 0, 30, 0.6) 0%, rgba(139, 69, 19, 0.5) 50%, rgba(160, 82, 45, 0.4) 100%)"
           : "linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.2) 100%)",
@@ -131,13 +131,13 @@ export default function GlassButton({
       scale: 1,
       boxShadow:
         variant === "primary"
-          ? "0 8px 32px rgba(255, 140, 0, 0.25), 0 0 0 1px rgba(255, 165, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)"
+          ? "0 8px 32px rgba(255, 140, 0, 0.6), 0 0 0 1px rgba(255, 165, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
           : variant === "accent"
           ? "0 8px 32px rgba(93, 0, 30, 0.25), 0 0 0 1px rgba(160, 82, 45, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)"
           : "0 8px 32px rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
       background:
         variant === "primary"
-          ? "linear-gradient(135deg, rgba(255, 140, 0, 0.4) 0%, rgba(255, 165, 0, 0.3) 50%, rgba(255, 69, 0, 0.2) 100%)"
+          ? "linear-gradient(135deg, #FF8C00 0%, #FFA500 50%, #FF4500 100%)"
           : variant === "accent"
           ? "linear-gradient(135deg, rgba(93, 0, 30, 0.4) 0%, rgba(139, 69, 19, 0.3) 50%, rgba(160, 82, 45, 0.2) 100%)"
           : "linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.1) 100%)",

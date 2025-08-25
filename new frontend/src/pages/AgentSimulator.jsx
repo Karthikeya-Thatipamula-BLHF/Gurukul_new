@@ -177,6 +177,115 @@ export default function AgentSimulator() {
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
   const [lessonTaskId, setLessonTaskId] = useState(null);
 
+  // Safely render activity content that may be an object or string
+  const renderActivityContent = (activity) => {
+    if (!activity) return null;
+    if (typeof activity === 'string') {
+      return <p className="text-white/90 leading-relaxed">{activity}</p>;
+    }
+    if (Array.isArray(activity)) {
+      return (
+        <ul className="list-disc list-inside text-white/90 leading-relaxed">
+          {activity.map((item, idx) => (
+            <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+          ))}
+        </ul>
+      );
+    }
+    if (typeof activity === 'object') {
+      const { title, description, instructions, materials_needed, materials, steps } = activity;
+      return (
+        <div className="space-y-3">
+          {title && <p className="text-white font-semibold">{title}</p>}
+          {description && <p className="text-white/90 leading-relaxed">{description}</p>}
+
+          {Array.isArray(instructions) && instructions.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Instructions:</p>
+              <ol className="list-decimal list-inside text-white/90 space-y-1 mt-1">
+                {instructions.map((ins, idx) => (
+                  <li key={idx}>{ins}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+          {typeof instructions === 'string' && instructions && (
+            <p className="text-white/90">{instructions}</p>
+          )}
+
+          {Array.isArray(steps) && steps.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Steps:</p>
+              <ol className="list-decimal list-inside text-white/90 space-y-1 mt-1">
+                {steps.map((s, idx) => (
+                  <li key={idx}>{s}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {Array.isArray(materials_needed) && materials_needed.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Materials Needed:</p>
+              <ul className="list-disc list-inside text-white/90 space-y-1 mt-1">
+                {materials_needed.map((m, idx) => (
+                  <li key={idx}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {Array.isArray(materials) && materials.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Materials:</p>
+              <ul className="list-disc list-inside text-white/90 space-y-1 mt-1">
+                {materials.map((m, idx) => (
+                  <li key={idx}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return <p className="text-white/90 leading-relaxed">{String(activity)}</p>;
+  };
+
+  // Safely render question content that may be an object or string
+  const renderQuestionContent = (question) => {
+    if (!question) return null;
+    if (typeof question === 'string') {
+      return <p className="text-white/90 leading-relaxed italic">"{question}"</p>;
+    }
+    if (Array.isArray(question)) {
+      return (
+        <ul className="list-disc list-inside text-white/90">
+          {question.map((q, idx) => (
+            <li key={idx}>{typeof q === 'string' ? q : JSON.stringify(q)}</li>
+          ))}
+        </ul>
+      );
+    }
+    if (typeof question === 'object') {
+      const text = question.text || question.question || question.prompt || question.title || '';
+      const options = question.options || question.choices || [];
+      return (
+        <div className="space-y-3">
+          {text && (
+            <p className="text-white/90 leading-relaxed italic">"{text}"</p>
+          )}
+          {Array.isArray(options) && options.length > 0 && (
+            <ul className="list-disc list-inside text-white/90">
+              {options.map((opt, idx) => (
+                <li key={idx}>{typeof opt === 'string' ? opt : JSON.stringify(opt)}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    }
+    return <p className="text-white/90 leading-relaxed">{String(question)}</p>;
+  };
+
   // Financial simulation processing state
   const [isProcessingSimulation, setIsProcessingSimulation] = useState(false);
   const [simulationTaskId, setSimulationTaskId] = useState(null);
@@ -1365,6 +1474,11 @@ export default function AgentSimulator() {
 
     // If the financial agent is active, send the financial simulation data and fetch results
     if (activeAgent && activeAgent.type === "financial") {
+      // Show refresh note popup so users know results will update
+      toast('click referesh spontaniusly so the data will be updated and refreshed', {
+        icon: '🔄',
+        duration: 6000,
+      });
       try {
         await sendFinancialSimulationData();
 
@@ -3265,305 +3379,6 @@ export default function AgentSimulator() {
           </div>
         )}
 
-        {/* Goal Status */}
-        {monthData.goal_status.length > 0 &&
-          monthData.goal_status[0]?.goals && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-white/90 mb-2 flex items-center">
-                <Target size={14} className="mr-1.5 text-blue-400" />
-                Goal Status
-              </h4>
-              <div className="bg-black/20 rounded-md p-3 border border-white/10">
-                {Array.isArray(monthData.goal_status[0].goals) ? (
-                  // Handle array format (old format)
-                  monthData.goal_status[0].goals.map((goal, index) => (
-                    <div
-                      key={`goal-${index}`}
-                      className="mb-4 last:mb-0 bg-black/20 rounded-lg p-3"
-                    >
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
-                        <div>
-                          <div className="flex items-center">
-                            <span
-                              className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                                goal.status === "on_track"
-                                  ? "bg-green-500"
-                                  : "bg-yellow-500"
-                              }`}
-                            ></span>
-                            <span className="text-sm font-medium text-white/90">
-                              {goal.name}
-                            </span>
-                          </div>
-                          <div className="text-xs text-white/60 mt-1 ml-5">
-                            Priority: {goal.priority}
-                          </div>
-                        </div>
-                        <span
-                          className={`text-xs px-3 py-1 rounded-full mt-2 md:mt-0 ${
-                            goal.status === "on_track"
-                              ? "bg-green-500/30 text-green-300 border border-green-500/50"
-                              : "bg-yellow-500/30 text-yellow-300 border border-yellow-500/50"
-                          }`}
-                        >
-                          {goal.status === "on_track" ? "On Track" : "Behind"}
-                        </span>
-                      </div>
-
-                      <div className="mt-3">
-                        <div className="flex justify-between text-xs text-white/70 mb-1">
-                          <span>
-                            Progress: ₹{goal.saved_so_far} / ₹
-                            {goal.target_amount}
-                          </span>
-                          <span>
-                            {Math.round(
-                              (goal.saved_so_far / goal.target_amount) * 100
-                            )}
-                            %
-                          </span>
-                        </div>
-                        <div className="h-2.5 bg-black/30 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full"
-                            style={{
-                              width: `${
-                                (goal.saved_so_far / goal.target_amount) * 100
-                              }%`,
-                              backgroundColor:
-                                goal.status === "on_track"
-                                  ? "#10B981"
-                                  : "#FBBF24",
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 grid grid-cols-2 gap-3">
-                        <div className="bg-black/30 rounded p-2">
-                          <div className="text-xs text-white/60 mb-1">
-                            Expected by now
-                          </div>
-                          <div className="text-sm font-medium text-blue-400">
-                            ₹{goal.expected_by_now}
-                          </div>
-                        </div>
-                        <div className="bg-black/30 rounded p-2">
-                          <div className="text-xs text-white/60 mb-1">
-                            Saved so far
-                          </div>
-                          <div
-                            className={`text-sm font-medium ${
-                              goal.saved_so_far >= goal.expected_by_now
-                                ? "text-green-400"
-                                : "text-yellow-400"
-                            }`}
-                          >
-                            ₹{goal.saved_so_far}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Adjustment suggestion */}
-                      {goal.adjustment_suggestion && (
-                        <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-500/30">
-                          <div className="text-xs font-medium text-white/80 mb-1">
-                            Suggestion:
-                          </div>
-                          <div className="text-xs text-white/70">
-                            {goal.adjustment_suggestion}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : typeof monthData.goal_status[0].goals === "object" ? (
-                  // Handle object format (new format)
-                  Object.entries(monthData.goal_status[0].goals).map(
-                    ([goalName, goalData], index) => (
-                      <div
-                        key={`goal-${index}`}
-                        className="mb-4 last:mb-0 bg-black/20 rounded-lg p-3"
-                      >
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
-                          <div>
-                            <div className="flex items-center">
-                              <span
-                                className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                                  goalData.status === "on_track"
-                                    ? "bg-green-500"
-                                    : "bg-yellow-500"
-                                }`}
-                              ></span>
-                              <span className="text-sm font-medium text-white/90">
-                                {goalName
-                                  .replace(/_/g, " ")
-                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-                              </span>
-                            </div>
-                            {goalData.monthly_contribution && (
-                              <div className="text-xs text-white/60 mt-1 ml-5">
-                                Monthly: ₹{goalData.monthly_contribution}
-                              </div>
-                            )}
-                          </div>
-                          <span
-                            className={`text-xs px-3 py-1 rounded-full mt-2 md:mt-0 ${
-                              goalData.status === "on_track"
-                                ? "bg-green-500/30 text-green-300 border border-green-500/50"
-                                : "bg-yellow-500/30 text-yellow-300 border border-yellow-500/50"
-                            }`}
-                          >
-                            {goalData.status === "on_track"
-                              ? "On Track"
-                              : goalData.status === "ahead"
-                              ? "Ahead"
-                              : "Behind"}
-                          </span>
-                        </div>
-
-                        <div className="mt-3">
-                          <div className="flex justify-between text-xs text-white/70 mb-1">
-                            <span>
-                              Progress: ₹{goalData.current} / ₹{goalData.target}
-                            </span>
-                            <span>
-                              {goalData.progress_percentage ||
-                                Math.round(
-                                  (goalData.current / goalData.target) * 100
-                                )}
-                              %
-                            </span>
-                          </div>
-                          <div className="h-2.5 bg-black/30 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${
-                                  goalData.progress_percentage ||
-                                  Math.round(
-                                    (goalData.current / goalData.target) * 100
-                                  )
-                                }%`,
-                                backgroundColor:
-                                  goalData.status === "on_track"
-                                    ? "#10B981"
-                                    : goalData.status === "ahead"
-                                    ? "#3B82F6"
-                                    : "#FBBF24",
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-
-                        <div className="mt-3 grid grid-cols-2 gap-3">
-                          <div className="bg-black/30 rounded p-2">
-                            <div className="text-xs text-white/60 mb-1">
-                              Target Amount
-                            </div>
-                            <div className="text-sm font-medium text-blue-400">
-                              ₹{goalData.target}
-                            </div>
-                          </div>
-                          <div className="bg-black/30 rounded p-2">
-                            <div className="text-xs text-white/60 mb-1">
-                              Current Amount
-                            </div>
-                            <div
-                              className={`text-sm font-medium ${
-                                goalData.status === "ahead"
-                                  ? "text-green-400"
-                                  : goalData.status === "on_track"
-                                  ? "text-blue-400"
-                                  : "text-yellow-400"
-                              }`}
-                            >
-                              ₹{goalData.current}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Estimated completion */}
-                        {goalData.estimated_completion && (
-                          <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-500/30">
-                            <div className="text-xs font-medium text-white/80 mb-1">
-                              Estimated Completion:
-                            </div>
-                            <div className="text-xs text-white/70">
-                              {goalData.estimated_completion}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Adjustment suggestion */}
-                        {goalData.adjustment && (
-                          <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-500/30">
-                            <div className="text-xs font-medium text-white/80 mb-1">
-                              Suggestion:
-                            </div>
-                            <div className="text-xs text-white/70">
-                              {goalData.adjustment}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  )
-                ) : (
-                  <div className="text-center py-4 text-white/70">
-                    <p>No goal data available for this month.</p>
-                  </div>
-                )}
-
-                {/* Summary */}
-                {monthData.goal_status[0].summary && (
-                  <div className="mt-4 pt-3 border-t border-white/10">
-                    <div className="text-xs font-medium text-white/80 mb-2">
-                      Summary
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      <div className="bg-black/30 rounded p-2">
-                        <div className="text-xs text-white/60 mb-1">
-                          On Track Goals
-                        </div>
-                        <div className="text-sm font-medium text-green-400">
-                          {monthData.goal_status[0].summary.on_track_goals}
-                        </div>
-                      </div>
-                      <div className="bg-black/30 rounded p-2">
-                        <div className="text-xs text-white/60 mb-1">
-                          Behind Goals
-                        </div>
-                        <div className="text-sm font-medium text-yellow-400">
-                          {monthData.goal_status[0].summary.behind_goals}
-                        </div>
-                      </div>
-                      <div className="bg-black/30 rounded p-2">
-                        <div className="text-xs text-white/60 mb-1">
-                          Total Saved
-                        </div>
-                        <div className="text-sm font-medium text-blue-400">
-                          ₹{monthData.goal_status[0].summary.total_saved}
-                        </div>
-                      </div>
-                      <div className="bg-black/30 rounded p-2">
-                        <div className="text-xs text-white/60 mb-1">
-                          Required by Now
-                        </div>
-                        <div className="text-sm font-medium text-purple-400">
-                          ₹
-                          {
-                            monthData.goal_status[0].summary
-                              .total_required_by_now
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
         {/* Financial Strategy */}
         {monthData.financial_strategy.length > 0 && (
@@ -3673,6 +3488,79 @@ export default function AgentSimulator() {
               </div>
 
               {/* Karmic Tracker */}
+              {monthData.karmic_tracker.length === 0 && simulationResults?.karmic_tracker?.length > 0 && (
+                <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="text-sm font-medium text-white/90">
+                      Karmic Analysis
+                    </h5>
+                  </div>
+                  {/* Karma Score (fallback latest) */}
+                  <div className="mb-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-white/70">Karma Score</span>
+                      <span className="text-xs font-medium text-purple-400">
+                        {(
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.traits?.karma_score ||
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.karma_score || 0
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Trend (fallback latest) */}
+                  {(
+                    simulationResults.karmic_tracker[
+                      simulationResults.karmic_tracker.length - 1
+                    ]?.traits?.trend ||
+                    simulationResults.karmic_tracker[
+                      simulationResults.karmic_tracker.length - 1
+                    ]?.karma_trend
+                  ) && (
+                    <div className="mt-1 flex items-center">
+                      <span
+                        className={`text-xs font-medium ${
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.traits?.trend === "Positive" ||
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.karma_trend === "Positive" ||
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.karma_trend === "Improving"
+                            ? "text-green-400"
+                            : (
+                                simulationResults.karmic_tracker[
+                                  simulationResults.karmic_tracker.length - 1
+                                ]?.traits?.trend === "Negative" ||
+                                simulationResults.karmic_tracker[
+                                  simulationResults.karmic_tracker.length - 1
+                                ]?.karma_trend === "Negative" ||
+                                simulationResults.karmic_tracker[
+                                  simulationResults.karmic_tracker.length - 1
+                                ]?.karma_trend === "Declining"
+                              )
+                            ? "text-red-400"
+                            : "text-yellow-400"
+                        }`}
+                      >
+                        {
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.traits?.trend ||
+                          simulationResults.karmic_tracker[
+                            simulationResults.karmic_tracker.length - 1
+                          ]?.karma_trend
+                        }
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
               {monthData.karmic_tracker.length > 0 && (
                 <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-lg p-3">
                   <div className="flex items-center mb-2">
@@ -5844,7 +5732,7 @@ export default function AgentSimulator() {
                                             <span className="bg-indigo-500 w-6 h-6 rounded-full flex items-center justify-center mr-2 text-white text-sm font-bold">2</span>
                                             Activity
                                           </h4>
-                                          <p className="text-white/90 leading-relaxed">{lessonData.activity}</p>
+                                          {renderActivityContent(lessonData.activity)}
                                         </div>
                                       )}
 
@@ -5855,7 +5743,7 @@ export default function AgentSimulator() {
                                             <span className="bg-amber-500 w-6 h-6 rounded-full flex items-center justify-center mr-2 text-white text-sm font-bold">3</span>
                                             Question to Consider
                                           </h4>
-                                          <p className="text-white/90 leading-relaxed">{lessonData.question}</p>
+                                          {renderQuestionContent(lessonData.question)}
                                         </div>
                                       )}
 

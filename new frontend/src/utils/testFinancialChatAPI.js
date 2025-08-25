@@ -3,7 +3,9 @@
  * Use this to verify the Llama API endpoint is working correctly
  */
 
-const UNIGURU_API_BASE_URL = "https://3a46c48e4d91.ngrok-free.app";
+const UNIGURU_API_BASE_URL =
+  (typeof import !== "undefined" && typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_UNIGURU_API_BASE_URL) ||
+  "http://localhost:8000";
 
 /**
  * Test the financial chat API endpoint

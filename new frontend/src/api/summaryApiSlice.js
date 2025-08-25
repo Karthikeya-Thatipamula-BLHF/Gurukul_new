@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { CHAT_API_BASE_URL, UNIGURU_API_BASE_URL } from "../config";
+import { API_BASE_URL, CHAT_API_BASE_URL, UNIGURU_API_BASE_URL } from "../config";
 
-// Create a separate API slice for summary endpoints using the correct port (8001)
+// Create a separate API slice for summary endpoints using the correct port (8000 for Base_backend)
 export const summaryApiSlice = createApi({
   reducerPath: "summaryApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: CHAT_API_BASE_URL, // Use port 8001 for PDF/Image processing
+    baseUrl: API_BASE_URL, // Use port 8000 for PDF/Image processing (Base_backend)
     timeout: 60000, // 60 second timeout for file processing
   }),
   tagTypes: ["Summary"],

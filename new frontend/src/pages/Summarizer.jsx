@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import GlassContainer from "../components/GlassContainer";
-import { FiUpload, FiFileText } from "react-icons/fi";
+import { FiUpload, FiFileText, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 import chatLogsService from "../services/chatLogsService";
-import { CHAT_API_BASE_URL } from "../config";
+import { CHAT_API_BASE_URL, API_BASE_URL } from "../config";
 import { useTTS } from "../hooks/useTTS";
 import {
   useUploadPdfForSummaryMutation,
@@ -27,9 +27,11 @@ export default function Summarizer() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [showStreamingView, setShowStreamingView] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedModel, setSelectedModel] = useState("uniguru"); // Fixed to UniGuru model
   const [userId, setUserId] = useState(null);
   const fileInputRef = useRef(null);
+  const streamingControllerRef = useRef(null);
   const navigate = useNavigate();
 
   // RTK Query hooks - Using local backend with UniGuru model
@@ -76,6 +78,15 @@ export default function Summarizer() {
     getUserId();
   }, []);
 
+  // Cleanup preview URL when file changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
@@ -107,7 +118,12 @@ export default function Summarizer() {
         return;
       }
 
+      // Revoke previous preview URL if any
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setFile(selectedFile);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
       setError("");
 
       // Show success toast for file selection
@@ -264,12 +280,18 @@ export default function Summarizer() {
 
       toast.dismiss("upload-progress");
 
-      // Start streaming analysis using local backend
-      const streamUrl = `${CHAT_API_BASE_URL}/process-pdf-stream?llm=uniguru`;
+      // Start streaming analysis using Base_backend (port 8000)
+      const streamUrl = isImage 
+        ? `${API_BASE_URL}/process-img-stream?llm=uniguru`
+        : `${API_BASE_URL}/process-pdf-stream?llm=uniguru`;
 
-      console.log("🌊 Starting streaming document analysis:", streamUrl);
+      console.log(`🌊 Starting streaming ${isImage ? 'image' : 'document'} analysis:`, streamUrl);
 
-      const response = await fetch(streamUrl);
+      // Create abort controller for canceling the stream
+      const controller = new AbortController();
+      streamingControllerRef.current = controller;
+
+      const response = await fetch(streamUrl, { signal: controller.signal });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -303,12 +325,14 @@ export default function Summarizer() {
 
               // Filter out status messages and only accumulate actual content
               const isStatusMessage = content.includes('🔍') || content.includes('📄') ||
-                                    content.includes('🤖') || content.includes('📝') ||
+                                    content.includes('🖼️') || content.includes('🤖') || content.includes('📝') ||
                                     content.includes('✅') || content.includes('🎵') ||
                                     content.includes('[END]') || content.includes('[ERROR]') ||
-                                    content.includes('Starting document') || content.includes('Processing:') ||
+                                    content.includes('Starting document') || content.includes('Starting image') || content.includes('Processing:') ||
                                     content.includes('Using UNIGURU') || content.includes('Generating comprehensive') ||
-                                    content.includes('Document analysis complete') || content.includes('Audio summary available');
+                                    content.includes('Document analysis complete') || content.includes('Image analysis complete') || 
+                                    content.includes('Audio summary available') || content.includes('Text extracted from image') ||
+                                    content.includes('Analysis Results') || content.includes('📖') || content.includes('📊');
 
               // Add actual content, not status messages
               if (!isStatusMessage && content.trim()) {
@@ -323,7 +347,7 @@ export default function Summarizer() {
       // Save the final content to localStorage for potential navigation
       const finalSummaryData = {
         answer: accumulatedContent,
-        title: "Document Summary",
+        title: isImage ? "Image Analysis" : "Document Summary",
         llm: "uniguru",
         audio_file: null, // Will be handled separately
       };
@@ -334,7 +358,7 @@ export default function Summarizer() {
         name: file.name,
       }));
 
-      toast.success("Document analysis complete!", {
+      toast.success(`${isImage ? 'Image' : 'Document'} analysis complete!`, {
         icon: "🎉",
         position: "bottom-right",
         duration: 3000,
@@ -342,7 +366,7 @@ export default function Summarizer() {
 
       // Trigger TTS auto-play for the generated content
       if (ttsServiceHealthy && accumulatedContent.trim()) {
-        console.log("🔊 Document Summarizer: Triggering TTS auto-play");
+        console.log(`🔊 ${isImage ? 'Image' : 'Document'} Summarizer: Triggering TTS auto-play`);
 
         // Clean the content for better speech
         const cleanContent = accumulatedContent
@@ -360,20 +384,29 @@ export default function Summarizer() {
             delay: 1000,
             volume: 0.8
           }).catch(error => {
-            console.warn("🔊 Document Summarizer: TTS auto-play failed:", error.message);
+            console.warn(`🔊 ${isImage ? 'Image' : 'Document'} Summarizer: TTS auto-play failed:`, error.message);
           });
         }, 1500);
       }
 
     } catch (err) {
-      const errorMsg = err.message || "Failed to stream document analysis";
-      setError(errorMsg);
-      toast.error(errorMsg, {
-        position: "bottom-right",
-        duration: 5000,
-      });
+      if (err.name === "AbortError") {
+        // Stream was canceled by user
+        toast("Analysis canceled", {
+          icon: "🛑",
+          position: "bottom-right",
+        });
+      } else {
+        const errorMsg = err.message || "Failed to stream document analysis";
+        setError(errorMsg);
+        toast.error(errorMsg, {
+          position: "bottom-right",
+          duration: 5000,
+        });
+      }
     } finally {
       setIsStreaming(false);
+      streamingControllerRef.current = null;
     }
   };
 
@@ -421,145 +454,180 @@ export default function Summarizer() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center space-y-6 mt-6">
-          {/* Upload Box */}
-          <div
-            className="w-72 h-72 border-2 border-dashed border-white/30 rounded-2xl flex flex-col items-center justify-center p-8 bg-white/5 hover:bg-white/10 transition-all duration-300 cursor-pointer group relative overflow-hidden"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <input
-              type="file"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            />
+        {/* Main Content Area */}
+        {showStreamingView ? (
+          <div className="mt-6">
+            <div className="relative rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl ring-1 ring-white/5 p-4 md:p-6 overflow-hidden">
+              {/* Close (X) button to go back */}
+              <button
+                onClick={() => {
+                  if (streamingControllerRef.current) {
+                    streamingControllerRef.current.abort();
+                  }
+                  setIsStreaming(false);
+                  setShowStreamingView(false);
+                  setStreamingContent("");
+                }}
+                className="absolute top-3 right-3 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-200 border border-white/20 backdrop-blur-sm"
+                title="Close analysis"
+              >
+                <FiX className="w-4 h-4 text-white" />
+              </button>
 
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-            {!file ? (
-              <>
-                <FiFileText className="text-white/70 w-20 h-20 mb-6 group-hover:text-[#FF9933] transition-colors duration-300" />
-                <div className="text-center relative z-10">
-                  <p className="text-white text-lg font-medium mb-2">
-                    Drop your file here
-                  </p>
-                  <p className="text-white/60">or click to browse</p>
-                </div>
-              </>
-            ) : (
-              <div className="text-center relative z-10">
-                <FiFileText className="text-[#FF9933] w-16 h-16 mx-auto mb-4" />
-                <p className="text-white/90 font-medium mb-2 break-all">
-                  {file.name}
-                </p>
-                <p className="text-white/60">
-                  {(file.size / (1024 * 1024)).toFixed(2)} MB
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Analysis Button */}
-          <button
-            onClick={handleStreamingAnalysis}
-            disabled={!file || isStreaming}
-            className={`w-72 px-8 py-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-3 ${
-              !file || isStreaming
-                ? "bg-gray-500/50 cursor-not-allowed"
-                : "bg-[#FF9933]/20 hover:bg-[#FF9933]/30 hover:scale-105 active:scale-95"
-            }`}
-          >
-            {isStreaming ? (
-              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            ) : (
-              <FiUpload className="text-white w-5 h-5" />
-            )}
-            <span className="text-white text-lg">
-              {isStreaming ? "Analyzing..." : "Analysis"}
-            </span>
-          </button>
-
-          {/* Error Display */}
-          {error && (
-            <div className="text-red-400 text-center bg-red-500/10 p-4 rounded-xl border border-red-500/20 backdrop-blur-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Streaming Content Display */}
-          {showStreamingView && (
-            <div className="w-full max-w-4xl mx-auto mt-8">
-              <div className="bg-black/30 backdrop-blur-md p-8 rounded-xl shadow-xl border border-white/10">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl text-white font-bold">
-                    Live Document Analysis
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-[#FF9933]/20 px-3 py-1 rounded-md text-sm font-bold text-white/90">
-                      UniGuru
-                    </span>
-                    {isStreaming && (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="text-green-400 text-sm">Analyzing...</span>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[65vh] md:h-[70vh]">
+                {/* Preview Panel */}
+                <div className="bg-black/20 p-3 md:p-4 rounded-xl border border-white/10 flex flex-col h-full">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-white font-semibold flex items-center gap-2"><FiFileText className="w-4 h-4 text-white/80" /> Preview</h3>
+                    {file && (
+                      <span className="text-white/60 text-xs truncate max-w-[200px]">{file.name}</span>
                     )}
-                    {!isStreaming && streamingContent && ttsServiceHealthy && (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                        <span className="text-blue-400 text-sm">🔊 Audio Ready</span>
+                  </div>
+                  <div className="mt-2 rounded-xl overflow-hidden border border-white/5 bg-black/30 flex-1">
+                    {file?.type?.includes("pdf") && previewUrl ? (
+                      <object data={previewUrl} type="application/pdf" className="w-full h-full">
+                        <div className="p-4 text-white/70 text-sm">PDF preview not supported. You can download and open the file locally.</div>
+                      </object>
+                    ) : file?.type?.startsWith("image/") && previewUrl ? (
+                      <img src={previewUrl} alt={file?.name || 'preview'} className="w-full h-full object-contain bg-black/30" />
+                    ) : file ? (
+                      <div className="p-6 text-white/70 text-sm">
+                        No inline preview available for this file type.
+                        <div className="mt-2 text-white/50">{file.name}</div>
                       </div>
+                    ) : (
+                      <div className="p-6 text-white/60">No file selected</div>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-black/20 p-6 rounded-xl border border-white/5 min-h-[300px]">
-                  {streamingContent ? (
-                    <div className="text-white/90 whitespace-pre-wrap leading-relaxed">
-                      {streamingContent.split('\n').map((line, index) => (
-                        <div key={index} className="mb-2">
-                          {line.trim() && (
-                            <div className="flex items-start">
-                              <span className="text-[#FF9933] mr-2 mt-1.5 transform transition-transform duration-200">
-                                •
-                              </span>
-                              <span>{line}</span>
-                            </div>
-                          )}
+                {/* Live Analysis Panel */}
+                <div className="bg-black/20 p-3 md:p-4 rounded-xl border border-white/10 flex flex-col h-full">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-white font-semibold">Live {file?.type?.startsWith("image/") ? "Image" : "Document"} Analysis</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-[#FF9933]/20 px-2 py-0.5 rounded text-xs font-bold text-white/90">UniGuru</span>
+                      {isStreaming && (
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-green-400 text-xs">Analyzing...</span>
                         </div>
-                      ))}
+                      )}
+                      {!isStreaming && streamingContent && ttsServiceHealthy && (
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                          <span className="text-blue-400 text-xs">🔊 Audio Ready</span>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
-                        <div className="w-8 h-8 border-2 border-[#FF9933]/30 border-t-[#FF9933] rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-white/60">Preparing document analysis...</p>
+                  </div>
+
+                  <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex-1 overflow-auto">
+                    {streamingContent ? (
+                      <div className="text-white/90 whitespace-pre-wrap leading-relaxed">
+                        {streamingContent.split('\n').map((line, index) => (
+                          <div key={index} className="mb-2">
+                            {line.trim() && (
+                              <div className="flex items-start">
+                                <span className="text-[#FF9933] mr-2 mt-1.5">•</span>
+                                <span>{line}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                          <div className="w-8 h-8 border-2 border-[#FF9933]/30 border-t-[#FF9933] rounded-full animate-spin mx-auto mb-4"></div>
+                          <p className="text-white/60">Preparing {file?.type?.startsWith("image/") ? "image" : "document"} analysis...</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {!isStreaming && streamingContent && (
+                    <div className="mt-4 flex justify-end gap-3">
+                      <button
+                        onClick={() => navigate('/learn/summary')}
+                        className="px-5 py-2 bg-[#FF9933]/20 hover:bg-[#FF9933]/30 text-white rounded-lg transition-all duration-200"
+                      >
+                        View Full Summary
+                      </button>
                     </div>
                   )}
                 </div>
-
-                {!isStreaming && streamingContent && (
-                  <div className="mt-6 flex justify-center space-x-4">
-                    <button
-                      onClick={() => setShowStreamingView(false)}
-                      className="px-6 py-2 bg-gray-600/20 hover:bg-gray-600/30 text-white rounded-lg transition-all duration-300"
-                    >
-                      Close
-                    </button>
-                    <button
-                      onClick={() => navigate("/learn/summary")}
-                      className="px-6 py-2 bg-[#FF9933]/20 hover:bg-[#FF9933]/30 text-white rounded-lg transition-all duration-300"
-                    >
-                      View Full Summary
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center space-y-6 mt-6">
+            {/* Upload Box */}
+            <div
+              className="w-72 h-72 border-2 border-dashed border-white/30 rounded-2xl flex flex-col items-center justify-center p-8 bg-white/5 hover:bg-white/10 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+              onClick={() => fileInputRef.current.click()}
+            >
+              <input
+                type="file"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                className="hidden"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+              {!file ? (
+                <>
+                  <FiFileText className="text-white/70 w-20 h-20 mb-6 group-hover:text-[#FF9933] transition-colors duration-300" />
+                  <div className="text-center relative z-10">
+                    <p className="text-white text-lg font-medium mb-2">
+                      Drop your file here
+                    </p>
+                    <p className="text-white/60">or click to browse</p>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center relative z-10">
+                  <FiFileText className="text-[#FF9933] w-16 h-16 mx-auto mb-4" />
+                  <p className="text-white/90 font-medium mb-2 break-all">
+                    {file.name}
+                  </p>
+                  <p className="text-white/60">
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Analysis Button */}
+            <button
+              onClick={handleStreamingAnalysis}
+              disabled={!file || isStreaming}
+              className={`w-72 px-8 py-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-3 ${
+                !file || isStreaming
+                  ? "bg-gray-500/50 cursor-not-allowed"
+                  : "bg-[#FF9933]/20 hover:bg-[#FF9933]/30 hover:scale-105 active:scale-95"
+              }`}
+            >
+              {isStreaming ? (
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <FiUpload className="text-white w-5 h-5" />
+              )}
+              <span className="text-white text-lg">
+                {isStreaming ? "Analyzing..." : "Analysis"}
+              </span>
+            </button>
+
+            {/* Error Display */}
+            {error && (
+              <div className="text-red-400 text-center bg-red-500/10 p-4 rounded-xl border border-red-500/20 backdrop-blur-sm">
+                {error}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GlassContainer>
   );

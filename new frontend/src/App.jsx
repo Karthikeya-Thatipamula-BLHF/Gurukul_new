@@ -26,6 +26,7 @@ import AvatarSelection from "./pages/AvatarSelection";
 import ForecastingDashboard from "./pages/ForecastingDashboard";
 import SimpleForecastingDashboard from "./pages/SimpleForecastingDashboard";
 import FinancialChatDemo from "./pages/FinancialChatDemo";
+import MobileInputDemo from "./pages/MobileInputDemo";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -201,6 +202,10 @@ export default function App() {
                         <Route
                           path="/financial-chat-demo"
                           element={<FinancialChatDemo />}
+                        />
+                        <Route
+                          path="/mobile-input-demo"
+                          element={<MobileInputDemo />}
                         />
                         <Route path="/about" element={<About />} />
                         <Route path="/settings" element={<Settings />} />

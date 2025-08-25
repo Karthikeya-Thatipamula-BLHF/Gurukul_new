@@ -14,6 +14,8 @@ from llm_service import llm_service
 from datetime import datetime
 from subject_data import subjects_data
 from lectures_data import lectures_data
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 # Test data for fallback when database is empty
 test_data = [
     {
@@ -67,6 +69,7 @@ _allowed = os.getenv("ALLOWED_ORIGINS", "").strip()
 _allowed_list = [o.strip() for o in _allowed.split(",") if o.strip()] or [
     "http://localhost",
     "http://localhost:3000",
+    "http://localhost:5173",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -659,6 +662,80 @@ async def process_pdf_stream(
 
             yield f"data: \n\n"
             yield f"data: ✅ Document analysis complete!\n\n"
+            yield f"data: 🎵 Audio summary available for download\n\n"
+            yield f"data: [END]\n\n"
+
+        except Exception as e:
+            yield f"data: ❌ Error during streaming: {str(e)}\n\n"
+            yield f"data: [ERROR]\n\n"
+
+    return StreamingResponse(
+        generate_content(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/plain; charset=utf-8"
+        }
+    )
+
+@app.get("/process-img-stream")
+async def process_img_stream(
+    file_path: str = None,
+    llm: str = "uniguru"
+):
+    """
+    Stream image processing results line by line for live rendering
+    """
+    async def generate_content():
+        try:
+            yield f"data: 🔍 Starting image analysis...\n\n"
+            await asyncio.sleep(0.1)
+
+            # Get the latest image response
+            if image_response is None:
+                yield f"data: ❌ No image has been processed yet. Please upload an image first.\n\n"
+                yield f"data: [ERROR]\n\n"
+                return
+
+            yield f"data: 🖼️ Processing image with OCR...\n\n"
+            await asyncio.sleep(0.2)
+
+            yield f"data: 🤖 Using UNIGURU AI model\n\n"
+            await asyncio.sleep(0.2)
+
+            yield f"data: 📝 Generating comprehensive image analysis...\n\n"
+            await asyncio.sleep(0.3)
+
+            # Check if OCR text was found
+            if image_response.ocr_text and image_response.ocr_text != "No readable text found in the image.":
+                yield f"data: 📖 Text extracted from image:\n\n"
+                yield f"data: {image_response.ocr_text}\n\n"
+                yield f"data: \n\n"
+
+            # Clean the answer content (remove markdown formatting)
+            answer = image_response.answer
+
+            # Remove markdown formatting
+            cleaned_answer = answer.replace('**', '').replace('*', '').replace('##', '').replace('#', '')
+
+            # Split content into lines for streaming
+            content_lines = cleaned_answer.split('\n')
+
+            yield f"data: 📊 Analysis Results:\n\n"
+            yield f"data: \n\n"
+
+            # Stream content line by line
+            for i, line in enumerate(content_lines):
+                if line.strip():  # Only send non-empty lines
+                    yield f"data: {line.strip()}\n\n"
+                    await asyncio.sleep(0.05)  # Small delay for live rendering effect
+                else:
+                    yield f"data: \n\n"  # Send empty line
+                    await asyncio.sleep(0.02)
+
+            yield f"data: \n\n"
+            yield f"data: ✅ Image analysis complete!\n\n"
             yield f"data: 🎵 Audio summary available for download\n\n"
             yield f"data: [END]\n\n"
 

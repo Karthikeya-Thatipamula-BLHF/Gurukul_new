@@ -1,0 +1,361 @@
+/* ===== MOBILE BOTTOM NAVIGATION STYLES ===== */
+
+/* Bottom Navigation Bar with Glassy Theme */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(30, 30, 40, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.75rem 0 1rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15), 0 -1px 4px rgba(255, 215, 0, 0.05) inset;
+}
+
+/* Mobile Navigation Wrapper */
+.mobile-nav-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  height: 100%;
+}
+
+/* Branding Section */
+.mobile-nav-branding {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Guru Name Brand Text */
+.mobile-nav-brand-text {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #FFD700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+/* Mobile Navigation Avatar */
+.mobile-nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 215, 0, 0.1);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mobile-nav-avatar::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, 
+    rgba(255, 215, 0, 0.4) 0%, 
+    rgba(255, 165, 0, 0.3) 50%, 
+    rgba(255, 215, 0, 0.2) 100%
+  );
+  z-index: -1;
+  animation: avatar-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes avatar-glow {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Horizontal Scrolling Container */
+.mobile-nav-container-scroll {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 0.5rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Hide scrollbar for webkit browsers */
+.mobile-nav-container-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Subtle gradient indicators to show scrollability with glassy theme */
+.mobile-nav-container-scroll::before,
+.mobile-nav-container-scroll::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+.mobile-nav-container-scroll::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(30, 30, 40, 0.25), rgba(30, 30, 40, 0.1), transparent);
+}
+
+.mobile-nav-container-scroll::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(30, 30, 40, 0.25), rgba(30, 30, 40, 0.1), transparent);
+}
+
+/* Navigation Items for Horizontal Scroll with Glassy Theme */
+.mobile-nav-item-scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 70px;
+  max-width: 80px;
+  flex-shrink: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-nav-item-scroll:hover {
+  color: rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-nav-item-scroll.active {
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.1);
+}
+
+.mobile-nav-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  text-align: center;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mobile-nav-indicator {
+  position: absolute;
+  bottom: -0.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+/* Remove FAB and floating menu styles since we're using horizontal scroll */
+/*
+.mobile-fab {
+  // FAB styles removed
+}
+
+.mobile-menu-overlay {
+  // Overlay styles removed
+}
+
+.mobile-floating-menu {
+  // Floating menu styles removed
+}
+
+.mobile-menu-item {
+  // Menu item styles removed
+}
+
+.mobile-menu-icon {
+  // Menu icon styles removed
+}
+*/
+
+/* Show mobile navigation only on mobile devices */
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: block;
+  }
+  
+  /* Add bottom padding to body to account for fixed bottom nav */
+  body {
+    padding-bottom: 85px;
+  }
+  
+  /* Ensure main content doesn't overlap with bottom nav */
+  .main-content {
+    padding-bottom: 100px;
+  }
+}
+
+/* Hide mobile navigation on desktop */
+@media (min-width: 768px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+/* Animation enhancements with glassy theme */
+@keyframes slideUpGlass {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+    backdrop-filter: blur(20px);
+  }
+}
+
+@keyframes fadeInGlass {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mobile-bottom-nav {
+  animation: slideUpGlass 0.4s ease-out;
+}
+
+.mobile-nav-item-scroll {
+  animation: fadeInGlass 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+/* Staggered animation for nav items */
+.mobile-nav-item-scroll:nth-child(1) { animation-delay: 0.1s; }
+.mobile-nav-item-scroll:nth-child(2) { animation-delay: 0.15s; }
+.mobile-nav-item-scroll:nth-child(3) { animation-delay: 0.2s; }
+.mobile-nav-item-scroll:nth-child(4) { animation-delay: 0.25s; }
+.mobile-nav-item-scroll:nth-child(5) { animation-delay: 0.3s; }
+.mobile-nav-item-scroll:nth-child(6) { animation-delay: 0.35s; }
+.mobile-nav-item-scroll:nth-child(7) { animation-delay: 0.4s; }
+.mobile-nav-item-scroll:nth-child(8) { animation-delay: 0.45s; }
+.mobile-nav-item-scroll:nth-child(9) { animation-delay: 0.5s; }
+.mobile-nav-item-scroll:nth-child(10) { animation-delay: 0.55s; }
+
+/* Improve touch targets for better mobile experience with glassy theme */
+@media (max-width: 767px) {
+  .mobile-nav-item-scroll {
+    min-height: 44px;
+    min-width: 70px;
+  }
+  
+  /* Better visual feedback for touch with glassy effects */
+  .mobile-nav-item-scroll:active {
+    transform: scale(0.95) translateY(-1px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Enhanced active state for mobile */
+  .mobile-nav-item-scroll.active:active {
+    background: rgba(255, 215, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  }
+}
+
+/* Small screen optimizations for horizontal scroll with glassy theme */
+@media (max-width: 480px) {
+  .mobile-nav-item-scroll {
+    min-width: 65px;
+    max-width: 75px;
+    padding: 0.5rem 0.5rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  
+  .mobile-nav-label {
+    font-size: 0.65rem;
+  }
+  
+  .mobile-nav-container-scroll {
+    padding: 0 0.75rem;
+    gap: 0.25rem;
+  }
+  
+  /* Enhanced glassy effects for small screens */
+  .mobile-bottom-nav {
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2), 0 -1px 6px rgba(255, 215, 0, 0.08) inset;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-bottom-nav {
+    animation: none;
+  }
+  
+  .mobile-nav-item-scroll {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .mobile-bottom-nav {
+    border-top: 2px solid rgba(255, 255, 255, 0.4);
+    background: rgba(30, 30, 40, 0.4);
+  }
+  
+  .mobile-nav-item-scroll.active {
+    border: 2px solid #FFD700;
+    background: rgba(255, 215, 0, 0.2);
+  }
+  
+  .mobile-nav-item-scroll {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}

@@ -297,42 +297,42 @@ const FinancialChatInterface = ({
   return (
     <div className={`flex flex-col h-full bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg border border-blue-500/30 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-blue-500/30">
+      <div className="flex items-center justify-between p-6 border-b border-blue-500/30">
         <div className="flex items-center">
-          <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mr-3">
-            <Bot size={16} className="text-blue-400" />
+          <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mr-4">
+            <Bot size={24} className="text-blue-400" />
           </div>
           <div>
-            <h3 className="text-white font-medium">Financial AI Advisor</h3>
-            <p className="text-xs text-white/60">Powered by Llama AI</p>
+            <h3 className="text-white font-semibold text-lg">Financial AI Advisor</h3>
+            <p className="text-sm text-white/70">Powered by Llama AI</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <DollarSign size={16} className="text-green-400" />
-          <TrendingUp size={16} className="text-blue-400" />
-          <PieChart size={16} className="text-purple-400" />
+        <div className="flex items-center space-x-3">
+          <DollarSign size={20} className="text-green-400" />
+          <TrendingUp size={20} className="text-blue-400" />
+          <PieChart size={20} className="text-purple-400" />
         </div>
       </div>
 
       {/* Financial Metrics Bar */}
       {keyMetrics && (
-        <div className="px-4 py-2 bg-gray-800/30 border-b border-blue-500/20">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center space-x-4">
+        <div className="px-6 py-2 bg-gray-800/30 border-b border-blue-500/20">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-6">
               <div className="flex items-center">
-                <Target size={12} className="text-green-400 mr-1" />
-                <span className="text-white/70">Savings Rate:</span>
-                <span className="text-green-400 ml-1 font-medium">{keyMetrics.savingsRate}%</span>
+                <Target size={16} className="text-green-400 mr-2" />
+                <span className="text-white/80 font-medium">Savings Rate:</span>
+                <span className="text-green-400 ml-2 font-semibold text-lg">{keyMetrics.savingsRate}%</span>
               </div>
               <div className="flex items-center">
-                <Activity size={12} className="text-blue-400 mr-1" />
-                <span className="text-white/70">Health Score:</span>
-                <span className="text-blue-400 ml-1 font-medium">{keyMetrics.healthScore}/100</span>
+                <Activity size={16} className="text-blue-400 mr-2" />
+                <span className="text-white/80 font-medium">Health Score:</span>
+                <span className="text-blue-400 ml-2 font-semibold text-lg">{keyMetrics.healthScore}/100</span>
               </div>
             </div>
             <div className="flex items-center">
-              <span className="text-white/70">Progress:</span>
-              <span className="text-purple-400 ml-1 font-medium">
+              <span className="text-white/80 font-medium">Progress:</span>
+              <span className="text-purple-400 ml-2 font-semibold text-lg">
                 {keyMetrics.currentMonth}/{keyMetrics.totalMonths} months
               </span>
             </div>
@@ -341,14 +341,14 @@ const FinancialChatInterface = ({
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-[350px]">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-3 ${
+              className={`max-w-[85%] rounded-lg p-4 ${
                 message.type === "user"
                   ? "bg-blue-600/30 border border-blue-500/40 text-white"
                   : message.isError
@@ -356,26 +356,26 @@ const FinancialChatInterface = ({
                   : "bg-gray-800/50 border border-gray-600/40 text-white"
               }`}
             >
-              <div className="flex items-start space-x-2">
+              <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-1">
                   {message.type === "user" ? (
-                    <User size={14} className="text-blue-400" />
+                    <User size={16} className="text-blue-400" />
                   ) : (
-                    <Bot size={14} className={message.isError ? "text-red-400" : "text-green-400"} />
+                    <Bot size={16} className={message.isError ? "text-red-400" : "text-green-400"} />
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-sm leading-relaxed mb-2">{message.content}</p>
                   
                   {/* Show suggestions for assistant messages */}
                   {message.suggestions && (
                     <div className="mt-3 space-y-2">
-                      <p className="text-xs text-white/60">Quick questions:</p>
+                      <p className="text-xs text-white/70 font-medium">Quick questions:</p>
                       {message.suggestions.map((suggestion, index) => (
                         <button
                           key={index}
                           onClick={() => handleSuggestionClick(suggestion)}
-                          className="block w-full text-left text-xs bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded px-2 py-1 text-blue-200 transition-colors"
+                          className="block w-full text-left text-sm bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded-md px-3 py-2 text-blue-200 transition-colors"
                         >
                           {suggestion}
                         </button>
@@ -384,11 +384,11 @@ const FinancialChatInterface = ({
                   )}
                   
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-white/40">
+                    <span className="text-xs text-white/50">
                       {formatTime(message.timestamp)}
                     </span>
                     {message.confidence && (
-                      <span className="text-xs text-white/60">
+                      <span className="text-xs text-white/70">
                         Confidence: {Math.round(message.confidence * 100)}%
                       </span>
                     )}
@@ -404,7 +404,7 @@ const FinancialChatInterface = ({
           <div className="flex justify-start">
             <div className="bg-gray-800/50 border border-gray-600/40 rounded-lg p-3">
               <div className="flex items-center space-x-2">
-                <Bot size={14} className="text-green-400" />
+                <Bot size={16} className="text-green-400" />
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
@@ -419,80 +419,80 @@ const FinancialChatInterface = ({
       </div>
 
       {/* Quick Actions */}
-      <div className="px-4 py-2 border-t border-blue-500/30">
-        <div className="flex flex-wrap gap-2 mb-2">
+      <div className="px-6 py-4 border-t border-blue-500/30">
+        <div className="flex flex-wrap gap-3 mb-3">
           <button
             onClick={() => handleSuggestionClick("Analyze my current financial health and provide a detailed assessment")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-green-600/20 hover:bg-green-600/30 border border-green-500/40 rounded text-green-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-green-600/20 hover:bg-green-600/30 border border-green-500/40 rounded-lg text-green-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <Activity size={12} className="mr-1" />
+            <Activity size={16} className="mr-2" />
             Health Check
           </button>
           <button
             onClick={() => handleSuggestionClick("How can I improve my savings rate? Give me specific strategies based on my data")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 rounded text-blue-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 rounded-lg text-blue-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <Target size={12} className="mr-1" />
+            <Target size={16} className="mr-2" />
             Savings Tips
           </button>
           <button
             onClick={() => handleSuggestionClick("Review my spending patterns and identify areas where I can cut costs")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 rounded text-purple-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 rounded-lg text-purple-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <PieChart size={12} className="mr-1" />
+            <PieChart size={16} className="mr-2" />
             Spending
           </button>
           <button
             onClick={() => handleSuggestionClick("What are my biggest financial risks and how can I mitigate them?")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 rounded text-red-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 rounded-lg text-red-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <AlertCircle size={12} className="mr-1" />
+            <AlertCircle size={16} className="mr-2" />
             Risks
           </button>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={() => handleSuggestionClick("Am I on track to meet my financial goals? What should I adjust?")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/40 rounded text-yellow-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/40 rounded-lg text-yellow-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <Target size={12} className="mr-1" />
+            <Target size={16} className="mr-2" />
             Goal Progress
           </button>
           <button
             onClick={() => handleSuggestionClick("What investment strategies do you recommend based on my financial situation?")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 rounded text-indigo-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 rounded-lg text-indigo-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <TrendingUp size={12} className="mr-1" />
+            <TrendingUp size={16} className="mr-2" />
             Investments
           </button>
           <button
             onClick={() => handleSuggestionClick("How does my emergency fund look? Should I prioritize building it more?")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/40 rounded text-orange-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/40 rounded-lg text-orange-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <Shield size={12} className="mr-1" />
+            <Shield size={16} className="mr-2" />
             Emergency Fund
           </button>
           <button
             onClick={() => handleSuggestionClick("Give me a comprehensive financial plan for the next 6 months")}
             disabled={isLoading}
-            className="flex items-center px-2 py-1 text-xs bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 rounded text-cyan-200 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 text-sm bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 rounded-lg text-cyan-200 transition-colors disabled:opacity-50 font-medium"
           >
-            <Lightbulb size={12} className="mr-1" />
+            <Lightbulb size={16} className="mr-2" />
             6-Month Plan
           </button>
         </div>
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-blue-500/30">
-        <div className="flex items-center space-x-2">
+      <div className="p-6 border-t border-blue-500/30">
+        <div className="flex items-center space-x-3">
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}
@@ -500,18 +500,18 @@ const FinancialChatInterface = ({
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask about your finances..."
-              className="w-full bg-blue-600/20 border border-blue-500/40 rounded-lg py-2 px-3 pr-10 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60"
+              className="w-full bg-blue-600/20 border border-blue-500/40 rounded-lg py-3 px-4 pr-12 text-white text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60"
               rows="1"
-              style={{ minHeight: "38px", maxHeight: "100px" }}
+              style={{ minHeight: "48px", maxHeight: "120px" }}
               disabled={isLoading}
             />
           </div>
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="p-2 bg-blue-600/30 hover:bg-blue-600/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed border border-blue-500/40 rounded-lg text-white transition-colors"
+            className="p-3 bg-blue-600/30 hover:bg-blue-600/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed border border-blue-500/40 rounded-lg text-white transition-colors"
           >
-            <Send size={16} />
+            <Send size={20} />
           </button>
         </div>
       </div>

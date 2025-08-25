@@ -1,0 +1,27 @@
+{
+  "user_id": "4473a571-8982-40ea-850b-e92fb75f5c91",
+  "created_at": "2025-08-23T12:47:11.902784",
+  "last_active": "2025-08-23T13:23:35.058491",
+  "interaction_count": 4,
+  "preferences": {},
+  "wellness_metrics": {
+    "mood_trend": [],
+    "stress_level": "moderate",
+    "last_wellness_check": null
+  },
+  "educational_progress": {
+    "quiz_scores": [],
+    "learning_topics": [
+      "Create a comprehensive, detailed lesson about type of vedas in vedas.\n                Include extensive explanations, multiple examples, practical applications, historical context,\n                and advanced concepts. This should be a thorough educational resource with rich content.",
+      "Create a comprehensive, detailed lesson about type of vedas in vedqas.\n                Include extensive explanations, multiple examples, practical applications, historical context,\n                and advanced concepts. This should be a thorough educational resource with rich content.",
+      "Create a comprehensive, detailed lesson about type of vedas in vedas.\n                Include extensive explanations, multiple examples, practical applications, historical context,\n                and advanced concepts. This should be a thorough educational resource with rich content.",
+      "Create a comprehensive, detailed lesson about type of vedas in vedas.\n                Include extensive explanations, multiple examples, practical applications, historical context,\n                and advanced concepts. This should be a thorough educational resource with rich content."
+    ],
+    "last_activity": "2025-08-23T13:23:35.058483"
+  },
+  "spiritual_journey": {
+    "topics_explored": [],
+    "favorite_teachings": [],
+    "last_vedas_query": null
+  }
+}

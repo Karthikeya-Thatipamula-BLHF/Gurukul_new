@@ -1,11 +1,12 @@
 import { apiSlice } from "./apiSlice";
+import { FINANCIAL_API_BASE_URL } from "../config";
 
 export const learningApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Send learning data and get task ID
     sendLearningData: builder.mutation({
       query: ({ user_id, query, pdf_id }) => ({
-        url: "/user/learning",
+        url: `${FINANCIAL_API_BASE_URL}/user/learning`,
         method: "POST",
         body: { user_id, query, ...(pdf_id && { pdf_id }) },
         params: { wait: false }, // Use async processing
@@ -15,7 +16,7 @@ export const learningApiSlice = apiSlice.injectEndpoints({
 
     // Check learning task status and get response
     getLearningTaskStatus: builder.query({
-      query: (taskId) => `/user/learning/${taskId}`,
+      query: (taskId) => `${FINANCIAL_API_BASE_URL}/user/learning/${taskId}`,
       providesTags: (result, error, taskId) => [
         { type: "LearningTask", id: taskId },
       ],
@@ -29,7 +30,7 @@ export const learningApiSlice = apiSlice.injectEndpoints({
         formData.append("pdf_file", pdf_file);
         
         return {
-          url: "/pdf/chat",
+          url: `${FINANCIAL_API_BASE_URL}/pdf/chat`,
           method: "POST",
           body: formData,
         };
@@ -40,7 +41,7 @@ export const learningApiSlice = apiSlice.injectEndpoints({
     // Notify PDF removed
     notifyPdfRemoved: builder.mutation({
       query: ({ user_id, pdf_id }) => ({
-        url: "/pdf/removed",
+        url: `${FINANCIAL_API_BASE_URL}/pdf/removed`,
         method: "POST",
         body: { user_id, pdf_id },
       }),

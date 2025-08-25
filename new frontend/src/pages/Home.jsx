@@ -332,7 +332,7 @@ Perfect for visual learners and those who prefer structured, presentation-style 
   return (
     <div
       ref={containerRef}
-      className="relative z-10 flex flex-col items-center justify-center h-screen w-full px-4"
+      className="relative z-10 flex flex-col items-center justify-center w-full px-4 h-auto md:h-[100dvh]"
     >
       <div className="text-center space-y-8">
         <h1

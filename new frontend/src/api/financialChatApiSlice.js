@@ -8,7 +8,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const financialChatApiSlice = createApi({
   reducerPath: "financialChatApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://3a46c48e4d91.ngrok-free.app",
+    baseUrl: import.meta.env.VITE_UNIGURU_API_BASE_URL || "http://localhost:8000",
     prepareHeaders: (headers) => {
       headers.set("Content-Type", "application/json");
       headers.set("Accept", "application/json");

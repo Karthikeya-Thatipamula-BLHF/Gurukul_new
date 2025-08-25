@@ -45,7 +45,7 @@ async def _on_error(request, exc):
     logger.exception(f"[{trace}] Unhandled error: {exc}")
     return JSONResponse(status_code=500, content={"error": {"code": "INTERNAL_ERROR", "message": "Unexpected error"}, "trace_id": trace})
 
-)
+
 
 OUTPUT_DIR = "tts_outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)

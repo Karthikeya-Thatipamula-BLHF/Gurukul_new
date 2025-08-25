@@ -520,7 +520,7 @@ export default function Dashboard() {
               </div>
               <div className="text-sm text-white/70">{user?.email}</div>
             </div>
-            <div className="italic text-[#FFD700] text-sm flex items-center ml-auto min-w-[200px]">
+            <div className="italic text-[#FFD700] text-sm flex items-center ml-auto min-w-0 sm:min-w-[200px]">
               <Quote size={20} className="mr-2" />
               {quoteLoading && <span>Loading quote...</span>}
               {quoteData?.q && <span>"{quoteData.q}"</span>}

@@ -32,10 +32,10 @@ from .utils import format_memory_response, format_interaction_response, paginate
 
 # Ensure Backend utils is importable before importing logging_config
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..')) 
 
 # Configure logging
-from utils.logging_config import configure_logging
+from utils.logging_config import configure_logging 
 logger = configure_logging("memory_management")
 
 # Initialize FastAPI app

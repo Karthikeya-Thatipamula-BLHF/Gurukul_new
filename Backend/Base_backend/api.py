@@ -1,3 +1,7 @@
+import os, sys
+# Ensure this directory is on sys.path so same-folder imports work when running as a package
+sys.path.append(os.path.dirname(__file__))
+
 from rag import *
 from dotenv import load_dotenv
 import uvicorn
@@ -85,16 +89,24 @@ app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
 
-# Tighten CORS via ALLOWED_ORIGINS
+# CORS configuration via ALLOWED_ORIGINS
+# To allow all origins, set ALLOWED_ORIGINS="*" in your environment.
 _allowed = os.getenv("ALLOWED_ORIGINS", "").strip()
-_allowed_list = [o.strip() for o in _allowed.split(",") if o.strip()] or [
-    "http://localhost",
-    "http://localhost:3000",
-]
+if _allowed == "*":
+    _allow_all_origins = True
+    _allowed_list = ["*"]
+else:
+    _allow_all_origins = False
+    _allowed_list = [o.strip() for o in _allowed.split(",") if o.strip()] or [
+        "http://localhost",
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_list,
-    allow_credentials=True,
+    # Credentials cannot be used with wildcard "*" origin. Disable when allowing all origins.
+    allow_credentials=False if _allow_all_origins else True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -1460,6 +1472,82 @@ async def summarize_image():
         raise HTTPException(status_code=404, detail="No image has been processed yet.")
     return image_response
 
+@app.get("/process-img-stream")
+async def process_img_stream(
+    file_path: str = None,
+    llm: str = "uniguru"
+):
+    """
+    Stream image processing results line by line for live rendering
+    """
+    from fastapi.responses import StreamingResponse
+    
+    async def generate_content():
+        try:
+            yield f"data: 🔍 Starting image analysis...\n\n"
+            await asyncio.sleep(0.1)
+
+            # Get the latest image response
+            if image_response is None:
+                yield f"data: ❌ No image has been processed yet. Please upload an image first.\n\n"
+                yield f"data: [ERROR]\n\n"
+                return
+
+            yield f"data: 🖼️ Processing image with OCR...\n\n"
+            await asyncio.sleep(0.2)
+
+            yield f"data: 🤖 Using UNIGURU AI model\n\n"
+            await asyncio.sleep(0.2)
+
+            yield f"data: 📝 Generating comprehensive image analysis...\n\n"
+            await asyncio.sleep(0.3)
+
+            # Check if OCR text was found
+            if image_response.ocr_text and image_response.ocr_text != "No readable text found in the image.":
+                yield f"data: 📖 Text extracted from image:\n\n"
+                yield f"data: {image_response.ocr_text}\n\n"
+                yield f"data: \n\n"
+
+            # Clean the answer content (remove markdown formatting)
+            answer = image_response.answer
+
+            # Remove markdown formatting
+            cleaned_answer = answer.replace('**', '').replace('*', '').replace('##', '').replace('#', '')
+
+            # Split content into lines for streaming
+            content_lines = cleaned_answer.split('\n')
+
+            yield f"data: 📊 Analysis Results:\n\n"
+            yield f"data: \n\n"
+
+            # Stream content line by line
+            for i, line in enumerate(content_lines):
+                if line.strip():  # Only send non-empty lines
+                    yield f"data: {line.strip()}\n\n"
+                    await asyncio.sleep(0.05)  # Small delay for live rendering effect
+                else:
+                    yield f"data: \n\n"  # Send empty line
+                    await asyncio.sleep(0.02)
+
+            yield f"data: \n\n"
+            yield f"data: ✅ Image analysis complete!\n\n"
+            yield f"data: 🎵 Audio summary available for download\n\n"
+            yield f"data: [END]\n\n"
+
+        except Exception as e:
+            yield f"data: ❌ Error during streaming: {str(e)}\n\n"
+            yield f"data: [ERROR]\n\n"
+
+    return StreamingResponse(
+        generate_content(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/plain; charset=utf-8"
+        }
+    )
+
 @app.get("/api/stream/{filename}")
 async def stream_audio(filename: str):
     audio_path = os.path.join(TEMP_DIR, filename)
@@ -1485,6 +1573,191 @@ async def download_audio(filename: str):
         media_type="audio/mpeg",
         filename=filename
     )
+
+@app.get("/process-pdf-stream")
+async def process_pdf_stream(
+    file_path: str = None,
+    llm: str = "uniguru"
+):
+    """
+    Stream PDF processing results line by line for live rendering
+    """
+    from fastapi.responses import StreamingResponse
+    
+    async def generate_content():
+        try:
+            yield f"data: 🔍 Starting document analysis...\n\n"
+            await asyncio.sleep(0.1)
+
+            # Get the latest PDF response
+            if pdf_response is None:
+                yield f"data: ❌ No PDF has been processed yet. Please upload a document first.\n\n"
+                yield f"data: [ERROR]\n\n"
+                return
+
+            yield f"data: 📄 Processing: {pdf_response.title}\n\n"
+            await asyncio.sleep(0.2)
+
+            yield f"data: 🤖 Using UNIGURU AI model\n\n"
+            await asyncio.sleep(0.2)
+
+            yield f"data: 📝 Generating comprehensive summary...\n\n"
+            await asyncio.sleep(0.3)
+
+            # Clean the answer content (remove markdown formatting)
+            answer = pdf_response.answer
+
+            # Remove markdown formatting
+            cleaned_answer = answer.replace('**', '').replace('*', '').replace('##', '').replace('#', '')
+
+            # Split content into lines for streaming
+            content_lines = cleaned_answer.split('\n')
+
+            yield f"data: \n\n"
+            yield f"data: {pdf_response.title}\n\n"
+            yield f"data: \n\n"
+
+            # Stream content line by line
+            for i, line in enumerate(content_lines):
+                if line.strip():  # Only send non-empty lines
+                    yield f"data: {line.strip()}\n\n"
+                    await asyncio.sleep(0.05)  # Small delay for live rendering effect
+                else:
+                    yield f"data: \n\n"  # Send empty line
+                    await asyncio.sleep(0.02)
+
+            yield f"data: \n\n"
+            yield f"data: ✅ Document analysis complete!\n\n"
+            yield f"data: 🎵 Audio summary available for download\n\n"
+            yield f"data: [END]\n\n"
+
+        except Exception as e:
+            yield f"data: ❌ Error during streaming: {str(e)}\n\n"
+            yield f"data: [ERROR]\n\n"
+
+    return StreamingResponse(
+        generate_content(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/plain; charset=utf-8"
+        }
+    )
+
+# ==== OpenAI-compatible Chat Completions Proxy (CORS-enabled) ====
+@app.options("/v1/chat/completions")
+async def chat_completions_options(request: Request):
+    # When allowing all origins, use "*" for preflight responses
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, ngrok-skip-browser-warning",
+            "Access-Control-Max-Age": "86400",
+        },
+    )
+
+@app.post("/v1/chat/completions")
+async def chat_completions_proxy(request: Request):
+    """
+    Proxy OpenAI-compatible chat completions with CORS enabled.
+    Tries multiple upstreams automatically if the first one fails (e.g., 404/5xx).
+    Upstream priority:
+      1) UNIGURU_NGROK_ENDPOINT or UNIGURU_API_BASE_URL (if set)
+      2) LOCAL_LLAMA_API_URL (if set)
+      3) https://api.groq.com/openai (uses GROQ_API_KEY)
+      4) https://api.openai.com (uses OPENAI_API_KEY)
+    """
+    # Parse JSON body
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    # Build candidate upstream list
+    candidates = []
+    # 1) Custom ngrok/api base
+    custom_base = os.getenv("UNIGURU_NGROK_ENDPOINT") or os.getenv("UNIGURU_API_BASE_URL")
+    if custom_base:
+        candidates.append(custom_base)
+    # 2) Local LLaMA
+    local_llama = os.getenv("LOCAL_LLAMA_API_URL")
+    if local_llama:
+        candidates.append(local_llama)
+    # 3) Groq OpenAI-compatible
+    candidates.append("https://api.groq.com/openai")
+    # 4) OpenAI
+    candidates.append("https://api.openai.com")
+
+    # Prepare incoming auth (if any)
+    incoming_auth = request.headers.get("authorization")
+
+    last_error = None
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for base in candidates:
+            # Normalize URL
+            if base.rstrip("/").endswith("/v1/chat/completions"):
+                url = base
+            else:
+                # If base already includes '/openai', keep it; we still add '/v1/chat/completions'
+                url = base.rstrip("/") + "/v1/chat/completions"
+
+            # Build headers per-provider
+            headers = {
+                "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "true",
+            }
+            # Prefer incoming auth if present
+            if incoming_auth:
+                headers["Authorization"] = incoming_auth
+
+            # Provider-specific auth if not provided
+            if "api.groq.com" in url and "Authorization" not in headers:
+                groq_key = os.getenv("GROQ_API_KEY")
+                if groq_key:
+                    headers["Authorization"] = f"Bearer {groq_key}"
+            if "api.openai.com" in url and "Authorization" not in headers:
+                openai_key = os.getenv("OPENAI_API_KEY")
+                if openai_key:
+                    headers["Authorization"] = f"Bearer {openai_key}"
+
+            try:
+                resp = await client.post(url, json=body, headers=headers)
+            except httpx.TimeoutException as te:
+                last_error = HTTPException(status_code=504, detail=f"Upstream timeout at {url}")
+                continue
+            except Exception as e:
+                last_error = HTTPException(status_code=502, detail=f"Upstream error at {url}: {str(e)}")
+                continue
+
+            # If success, return immediately
+            if 200 <= resp.status_code < 300:
+                return Response(
+                    content=resp.content,
+                    status_code=resp.status_code,
+                    media_type=resp.headers.get("content-type", "application/json"),
+                )
+            else:
+                # Try next candidate on error status
+                last_error = HTTPException(status_code=resp.status_code, detail=f"Upstream {url} returned {resp.status_code}: {resp.text[:200]}")
+                continue
+
+    # If we reach here, all candidates failed
+    if last_error:
+        raise last_error
+    raise HTTPException(status_code=502, detail="No upstream providers available")
+
+# Register alias routes for chat completions to avoid 404 due to path variants
+# Supports with/without trailing slash and optional /api prefix
+app.add_api_route("/v1/chat/completions/", chat_completions_proxy, methods=["POST"])
+app.add_api_route("/api/v1/chat/completions", chat_completions_proxy, methods=["POST"])
+app.add_api_route("/api/v1/chat/completions/", chat_completions_proxy, methods=["POST"])
+app.add_api_route("/v1/chat/completions/", chat_completions_options, methods=["OPTIONS"])
+app.add_api_route("/api/v1/chat/completions", chat_completions_options, methods=["OPTIONS"])
+app.add_api_route("/api/v1/chat/completions/", chat_completions_options, methods=["OPTIONS"])
+
 # ==== AnimateDiff Video Generation Proxy ====
 class VideoGenerationRequest(BaseModel):
     # Old format fields (for backward compatibility)

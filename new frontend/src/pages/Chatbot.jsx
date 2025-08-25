@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import GlassContainer from "../components/GlassContainer";
 import ChatHistoryControls from "../components/ChatHistoryControls";
 import { FiFile } from "react-icons/fi";
-import { Volume2, VolumeX, Play } from "lucide-react";
+import { Volume2, VolumeX, Play, Send, Paperclip, MoreVertical, Menu } from "lucide-react";
 import { toast } from "react-hot-toast";
 import "../styles/chatbot.css";
 import chatLogsService from "../services/chatLogsService";
@@ -45,6 +45,10 @@ export default function Chatbot() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   // TTS state management
   const [isTTSMuted, setIsTTSMuted] = useState(() => {
     return localStorage.getItem('chatbotTTSMuted') === 'true';
@@ -58,6 +62,17 @@ export default function Chatbot() {
   // Navigation and auth persistence
   useNavigationPersistence();
   useAuthPersistence();
+
+  // Mobile detection effect
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Check TTS service health on mount and when mute state changes
   useEffect(() => {
@@ -357,15 +372,13 @@ export default function Chatbot() {
     }
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive - DESKTOP ONLY
   useEffect(() => {
-    // In a flex-col-reverse layout, we don't need to scroll as new messages
-    // automatically appear at the bottom and push older messages up
-    // This is just to ensure smooth scrolling for a better UX
-    if (messagesEndRef.current) {
+    // Only auto-scroll on desktop, not mobile
+    if (!isMobile && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, currentStreamingMessage]);
+  }, [messages, currentStreamingMessage, isMobile]);
 
   // Focus input and initialize textarea height on mount
   useEffect(() => {
@@ -748,7 +761,260 @@ export default function Chatbot() {
     }
   };
 
-  return (
+  // Simple Mobile layout component
+  const MobileChatLayout = () => (
+    <GlassContainer>
+      <div className="mobile-container">
+        {/* Simple Mobile Header */}
+        <div className="mobile-header">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="mobile-menu-btn"
+            >
+              <Menu className="w-5 h-5 text-white" />
+            </button>
+            <h1 className="mobile-title">{t("AI Guru Chat")}</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTTSMute}
+              className="mobile-icon-btn"
+              title={isTTSMuted ? "Unmute voice" : "Mute voice"}
+            >
+              {isTTSMuted ? (
+                <VolumeX className="w-4 h-4 text-white/60" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-white/80" />
+              )}
+            </button>
+            
+            <button
+              onClick={createNewSession}
+              className="mobile-icon-btn"
+              title={t('Start New Chat')}
+            >
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Simple Chat Content */}
+        <div className="mobile-chat-content">
+          {!isInitialized ? (
+            <div className="mobile-loading">
+              <div className="typing-indicator mb-4">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <p className="text-white/60 text-sm">{t("Loading chat history...")}</p>
+            </div>
+          ) : (
+            <>
+              {/* Simple Messages Area */}
+              <div className="mobile-messages">
+                {/* Loading indicator */}
+                {isLoading && !currentStreamingMessage && (
+                  <div className="mobile-message assistant">
+                    <div className="mobile-message-bubble">
+                      <div className="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Streaming message */}
+                {currentStreamingMessage && (
+                  <div className="mobile-message assistant">
+                    <div className="mobile-message-bubble">
+                      <p className="mobile-message-text">{currentStreamingMessage}</p>
+                      {serviceHealthy && (
+                        <button
+                          onClick={() => speakIndividualMessage(currentStreamingMessage, 'streaming')}
+                          className="mobile-tts-btn"
+                          disabled={isTTSMuted}
+                        >
+                          {playingMessageId === 'streaming' ? (
+                            <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                          ) : (
+                            <Play className="w-3 h-3" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Regular messages */}
+                {messages.map((message, index) => {
+                  const isUser = message.role === "user";
+                  const isError = message.isError;
+                  
+                  return (
+                    <div
+                      key={message.id || `message-${index}-${message.role}`}
+                      className={`mobile-message ${isUser ? 'user' : isError ? 'error' : 'assistant'}`}
+                    >
+                      <div className="mobile-message-bubble">
+                        <p className="mobile-message-text">{message.content}</p>
+                        
+                        {!isUser && !isError && serviceHealthy && (
+                          <button
+                            onClick={() => speakIndividualMessage(message.content, message.id || message.timestamp)}
+                            className="mobile-tts-btn"
+                            disabled={isTTSMuted}
+                          >
+                            {playingMessageId === (message.id || message.timestamp) ? (
+                              <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                            ) : (
+                              <Play className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                        
+                        {!isUser && message.model && (
+                          <div className="mobile-model-badge">
+                            {message.model.charAt(0).toUpperCase() + message.model.slice(1)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                <div ref={messagesEndRef} className="h-1" />
+              </div>
+              
+              {/* Simple Input Area */}
+              <div className="mobile-input-area">
+                {/* Model selector */}
+                <div className="mobile-controls">
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => {
+                      setSelectedModel(e.target.value);
+                      localStorage.setItem("selectedAIModel", e.target.value);
+                    }}
+                    className="mobile-model-select"
+                    disabled={isLoading || !isInitialized}
+                  >
+                    <option value="grok">Grok</option>
+                    <option value="llama">Llama</option>
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="uniguru">UniGuru</option>
+                  </select>
+                  
+                  {/* Status indicators */}
+                  <div className="mobile-status">
+                    {isGeneratingTTS && (
+                      <div className="mobile-status-item">
+                        <div className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
+                        <span>Generating...</span>
+                      </div>
+                    )}
+                    
+                    {!isGeneratingTTS && isSpeaking && (
+                      <div className="mobile-status-item">
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                        <span>Speaking...</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Input container */}
+                <div className="mobile-input-container">
+                  <button
+                    onClick={handleNavigateToLearn}
+                    className="mobile-attach-btn"
+                    title={t("Go to Summarizer page")}
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </button>
+                  
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage(e);
+                      }
+                    }}
+                    placeholder={t("Ask me anything...")}
+                    className="mobile-textarea"
+                    disabled={isLoading || !isInitialized}
+                    rows="1"
+                  />
+                  
+                  <button
+                    onClick={handleSendMessage}
+                    className={`mobile-send-btn ${
+                      input.trim() && !isLoading && isInitialized
+                        ? 'active'
+                        : 'disabled'
+                    }`}
+                    disabled={isLoading || !input.trim() || !isInitialized}
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* Simple Mobile Menu */}
+        {showMobileMenu && (
+          <div className="mobile-menu-overlay" onClick={() => setShowMobileMenu(false)}>
+            <div className="mobile-menu-content" onClick={(e) => e.stopPropagation()}>
+              <ChatHistoryControls
+                chatStats={chatStats}
+                onClearSession={clearCurrentSession}
+                onClearAll={clearAllHistory}
+                getAllSessions={getAllSessions}
+                switchToSession={switchToSession}
+                createNewSession={createNewSession}
+                deleteSession={deleteSession}
+                getCurrentSessionInfo={getCurrentSessionInfo}
+              />
+              
+              {serviceHealthy && !isTTSMuted && messages.length > 0 && (
+                <button
+                  onClick={() => {
+                    const assistantMessages = messages.filter(msg => msg.role === 'assistant' && !msg.isError);
+                    if (assistantMessages.length > 0) {
+                      const allText = assistantMessages.map(msg => msg.content).join('. ');
+                      speakText(allText, 'all-messages');
+                    }
+                    setShowMobileMenu(false);
+                  }}
+                  className="mobile-speak-all-btn"
+                  disabled={isGeneratingTTS || isSpeaking}
+                >
+                  🔊 Speak All AI Responses
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </GlassContainer>
+  );
+
+  return isMobile ? (
+    <MobileChatLayout />
+  ) : (
     <GlassContainer>
       {/* Header with Chat Controls */}
       <div className="flex items-center justify-between mb-6">
@@ -764,8 +1030,8 @@ export default function Chatbot() {
           <div className="flex items-center gap-2">
             {/* TTS Generation Indicator */}
             {isGeneratingTTS && (
-              <div className="flex items-center gap-1 text-xs text-blue-400">
-                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+              <div className="flex items-center gap-1 text-xs text-white/60">
+                <div className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
                 <span className="hidden sm:inline">Generating...</span>
               </div>
             )}

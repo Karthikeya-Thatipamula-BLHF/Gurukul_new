@@ -40,7 +40,7 @@ export default function GetStarted() {
       },
       {
         opacity: 1,
-        background: "rgba(0, 0, 0, 0.4)",
+        background: "rgba(0, 0, 0, 0.5)",
         duration: 1.2,
       }
     )
@@ -189,36 +189,7 @@ export default function GetStarted() {
       });
     });
 
-    // Button hover effects
-    const handleButtonEnter = () => {
-      if (buttonElement && buttonElement.querySelector("button")) {
-        gsap.to(buttonElement.querySelector("button"), {
-          y: -8,
-          boxShadow: "0 12px 25px rgba(255, 153, 51, 0.7)",
-          scale: 1.08,
-          duration: 0.4,
-          ease: Power3.easeOut,
-        });
-      }
-    };
-
-    const handleButtonLeave = () => {
-      if (buttonElement && buttonElement.querySelector("button")) {
-        gsap.to(buttonElement.querySelector("button"), {
-          y: 0,
-          boxShadow: "0 4px 15px rgba(255, 153, 51, 0.4)",
-          scale: 1,
-          duration: 0.3,
-          ease: Power3.easeOut,
-        });
-      }
-    };
-
-    if (buttonElement) {
-      buttonElement.addEventListener("mouseenter", handleButtonEnter);
-      buttonElement.addEventListener("mouseleave", handleButtonLeave);
-    }
-
+    
     // Create event handlers for feature cards
     const cardEnterHandlers = [];
     const cardLeaveHandlers = [];
@@ -230,7 +201,7 @@ export default function GetStarted() {
         gsap.to(card, {
           y: -15,
           scale: 1.05,
-          boxShadow: "0 15px 30px rgba(0, 0, 0, 0.3)",
+          boxShadow: "0 15px 30px rgba(255, 153, 51, 0.3)",
           duration: 0.3,
           ease: Power3.easeOut,
         });
@@ -251,7 +222,7 @@ export default function GetStarted() {
         gsap.to(card, {
           y: 0,
           scale: 1,
-          boxShadow: "none",
+          boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
           duration: 0.3,
           ease: Power3.easeOut,
         });
@@ -279,10 +250,6 @@ export default function GetStarted() {
 
     return () => {
       // Clean up all event listeners
-      if (buttonElement) {
-        buttonElement.removeEventListener("mouseenter", handleButtonEnter);
-        buttonElement.removeEventListener("mouseleave", handleButtonLeave);
-      }
 
       // Remove event listeners from feature cards
       featureCards.forEach((card, index) => {
@@ -382,7 +349,7 @@ export default function GetStarted() {
         style={{
           position: "fixed",
           inset: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
           zIndex: 1,
         }}
       ></div>
@@ -425,17 +392,6 @@ export default function GetStarted() {
               icon={FiArrowRight}
               variant="primary"
               onClick={handleGetStarted}
-              style={{
-                padding: "0.75rem 2rem",
-                fontSize: "1.1rem",
-                fontWeight: "600",
-                background: "linear-gradient(135deg, #FF9933, #FFD700)",
-                border: "none",
-                borderRadius: "50px",
-                boxShadow: "0 4px 15px rgba(255, 153, 51, 0.4)",
-                transition: "all 0.3s ease",
-                transform: "translateY(0)",
-              }}
               className="hover-effect"
             >
               Get Started
@@ -513,27 +469,30 @@ export default function GetStarted() {
             <div
               ref={(el) => (featureCardsRef.current[0] = el)}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                border: "1px solid rgba(255,255,255,0.35)",
                 borderRadius: "1rem",
                 padding: "1.5rem",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
+                boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease",
               }}
               onMouseEnter={(e) => {
                 gsap.to(e.currentTarget, {
                   y: -5,
-                  boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)",
+                  boxShadow: "0 12px 28px rgba(255, 153, 51, 0.25)",
                   duration: 0.3,
                 });
               }}
               onMouseLeave={(e) => {
                 gsap.to(e.currentTarget, {
                   y: 0,
-                  boxShadow: "none",
+                  boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
                   duration: 0.3,
                 });
               }}
@@ -574,27 +533,30 @@ export default function GetStarted() {
             <div
               ref={(el) => (featureCardsRef.current[1] = el)}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                border: "1px solid rgba(255,255,255,0.35)",
                 borderRadius: "1rem",
                 padding: "1.5rem",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
+                boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease",
               }}
               onMouseEnter={(e) => {
                 gsap.to(e.currentTarget, {
                   y: -5,
-                  boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)",
+                  boxShadow: "0 12px 28px rgba(255, 153, 51, 0.25)",
                   duration: 0.3,
                 });
               }}
               onMouseLeave={(e) => {
                 gsap.to(e.currentTarget, {
                   y: 0,
-                  boxShadow: "none",
+                  boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
                   duration: 0.3,
                 });
               }}
@@ -635,27 +597,30 @@ export default function GetStarted() {
             <div
               ref={(el) => (featureCardsRef.current[2] = el)}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                border: "1px solid rgba(255,255,255,0.35)",
                 borderRadius: "1rem",
                 padding: "1.5rem",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
+                boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease",
               }}
               onMouseEnter={(e) => {
                 gsap.to(e.currentTarget, {
                   y: -5,
-                  boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)",
+                  boxShadow: "0 12px 28px rgba(255, 153, 51, 0.25)",
                   duration: 0.3,
                 });
               }}
               onMouseLeave={(e) => {
                 gsap.to(e.currentTarget, {
                   y: 0,
-                  boxShadow: "none",
+                  boxShadow: "0 8px 24px rgba(255, 153, 51, 0.15)",
                   duration: 0.3,
                 });
               }}

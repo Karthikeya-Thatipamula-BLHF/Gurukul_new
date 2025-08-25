@@ -31,9 +31,10 @@ python -c "import prophet" 2>nul || (
 echo ✅ Dependencies checked
 echo.
 
-REM Start Base Backend with Orchestration (Port 8000) - Main API
-echo 🏠 Starting Base Backend with Orchestration on port 8000...
-start "Base Backend (Main API)" cmd /k "cd /d %BASE_DIR%Base_backend && python api.py"
+REM Start Base Backend with Orchestration (Port 8000) - Main API using uvicorn
+echo 🏠 Starting Base Backend with Orchestration on port 8000 (uvicorn)...
+rem Run from project root so module path Backend.Base_backend.api resolves correctly
+start "Base Backend (Main API)" cmd /k "cd /d %BASE_DIR%.. && python -m uvicorn Backend.Base_backend.api:app --host 0.0.0.0 --port 8000 --reload"
 timeout /t 4 /nobreak >nul
 
 REM Start API Data Service (Port 8001)

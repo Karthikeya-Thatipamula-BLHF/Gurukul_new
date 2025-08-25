@@ -214,6 +214,123 @@ export default function Subjects() {
     return styleModifiers[style] || styleModifiers.realistic;
   };
 
+  // Safely render activity content that may be an object or string
+  const renderActivityContent = (activity) => {
+    if (!activity) return null;
+    if (typeof activity === 'string') {
+      return <p className="text-white/95 leading-relaxed text-lg font-medium">{activity}</p>;
+    }
+    if (Array.isArray(activity)) {
+      return (
+        <ul className="list-disc list-inside text-white/95 leading-relaxed text-lg font-medium">
+          {activity.map((item, idx) => (
+            <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+          ))}
+        </ul>
+      );
+    }
+    if (typeof activity === 'object') {
+      const {
+        title,
+        description,
+        instructions,
+        materials_needed,
+        materials,
+        steps
+      } = activity;
+
+      return (
+        <div className="space-y-3">
+          {title && <p className="text-white font-semibold text-lg">{title}</p>}
+          {description && <p className="text-white/95 leading-relaxed text-lg">{description}</p>}
+
+          {Array.isArray(instructions) && instructions.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Instructions:</p>
+              <ol className="list-decimal list-inside text-white/90 space-y-1 mt-1">
+                {instructions.map((ins, idx) => (
+                  <li key={idx}>{ins}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+          {typeof instructions === 'string' && instructions && (
+            <p className="text-white/90">{instructions}</p>
+          )}
+
+          {Array.isArray(steps) && steps.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Steps:</p>
+              <ol className="list-decimal list-inside text-white/90 space-y-1 mt-1">
+                {steps.map((s, idx) => (
+                  <li key={idx}>{s}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {Array.isArray(materials_needed) && materials_needed.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Materials Needed:</p>
+              <ul className="list-disc list-inside text-white/90 space-y-1 mt-1">
+                {materials_needed.map((m, idx) => (
+                  <li key={idx}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {Array.isArray(materials) && materials.length > 0 && (
+            <div>
+              <p className="text-white/80 font-medium">Materials:</p>
+              <ul className="list-disc list-inside text-white/90 space-y-1 mt-1">
+                {materials.map((m, idx) => (
+                  <li key={idx}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return <p className="text-white/95 leading-relaxed text-lg font-medium">{String(activity)}</p>;
+  };
+
+  // Safely render question content that may be an object or string
+  const renderQuestionContent = (question) => {
+    if (!question) return null;
+    if (typeof question === 'string') {
+      return <p className="text-white/95 leading-relaxed text-lg font-medium italic">"{question}"</p>;
+    }
+    if (Array.isArray(question)) {
+      return (
+        <ul className="list-disc list-inside text-white/90">
+          {question.map((q, idx) => (
+            <li key={idx}>{typeof q === 'string' ? q : JSON.stringify(q)}</li>
+          ))}
+        </ul>
+      );
+    }
+    if (typeof question === 'object') {
+      const text = question.text || question.question || question.prompt || question.title || '';
+      const options = question.options || question.choices || [];
+      return (
+        <div className="space-y-3">
+          {text && (
+            <p className="text-white/95 leading-relaxed text-lg font-medium italic">"{text}"</p>
+          )}
+          {Array.isArray(options) && options.length > 0 && (
+            <ul className="list-disc list-inside text-white/90">
+              {options.map((opt, idx) => (
+                <li key={idx}>{typeof opt === 'string' ? opt : JSON.stringify(opt)}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    }
+    return <p className="text-white/95 leading-relaxed text-lg font-medium">{String(question)}</p>;
+  };
+
   // Handler for triggering interventions
   const handleTriggerIntervention = async () => {
     if (!userId || userId === "guest-user") {
@@ -1052,240 +1169,184 @@ export default function Subjects() {
               </div>
 
               {/* Toggle Switches */}
-              <div className={`space-y-6 transition-opacity duration-300 ${
-                isButtonDisabled() ? 'opacity-60' : ''
-              }`}>
-                {/* First Row - Include Wikipedia and Use Knowledge Store */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Include Wikipedia Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/20">
-                    <div>
-                      <label className={`font-medium text-lg block transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/50' : 'text-white/90'
-                      }`}>
-                        Include Wikipedia
-                      </label>
-                      <p className={`text-sm mt-1 transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/40' : 'text-white/60'
-                      }`}>
-                        Use Wikipedia data for enhanced content
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIncludeWikipedia(!includeWikipedia)}
-                      disabled={isButtonDisabled()}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                        includeWikipedia ? "bg-amber-500" : "bg-gray-600"
-                      } ${
-                        isButtonDisabled()
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
-                          includeWikipedia ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
+             <div
+  className={`space-y-6 transition-opacity duration-300 ${
+    isButtonDisabled() ? "opacity-60" : ""
+  }`}
+>
+  {/* First Row - Knowledge Store + Progress */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Use Knowledge Store Toggle */}
+    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/20">
+      <div>
+        <label
+          className={`font-medium text-lg block transition-opacity duration-300 ${
+            isButtonDisabled() ? "text-white/50" : "text-white/90"
+          }`}
+        >
+          Use Knowledge Store
+        </label>
+        <p
+          className={`text-sm mt-1 transition-opacity duration-300 ${
+            isButtonDisabled() ? "text-white/40" : "text-white/60"
+          }`}
+        >
+          Access curated knowledge database
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => setUseKnowledgeStore(!useKnowledgeStore)}
+        disabled={isButtonDisabled()}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+          useKnowledgeStore ? "bg-amber-500" : "bg-gray-600"
+        } ${
+          isButtonDisabled()
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
+            useKnowledgeStore ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </div>
 
-                  {/* Use Knowledge Store Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/20">
-                    <div>
-                      <label className={`font-medium text-lg block transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/50' : 'text-white/90'
-                      }`}>
-                        Use Knowledge Store
-                      </label>
-                      <p className={`text-sm mt-1 transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/40' : 'text-white/60'
-                      }`}>
-                        Access curated knowledge database
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setUseKnowledgeStore(!useKnowledgeStore)}
-                      disabled={isButtonDisabled()}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                        useKnowledgeStore ? "bg-amber-500" : "bg-gray-600"
-                      } ${
-                        isButtonDisabled()
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
-                          useKnowledgeStore ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
+    {/* View Progress Button */}
+    {userId && userId !== "guest-user" && (
+      <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/20">
+        <div>
+          <label
+            className={`font-medium text-lg block transition-opacity duration-300 ${
+              isButtonDisabled() ? "text-white/50" : "text-white/90"
+            }`}
+          >
+            View Progress
+          </label>
+          <p
+            className={`text-sm mt-1 transition-opacity duration-300 ${
+              isButtonDisabled() ? "text-white/40" : "text-white/60"
+            }`}
+          >
+            Show learning progress dashboard
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowProgressDashboard(!showProgressDashboard)}
+          disabled={isButtonDisabled()}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+            showProgressDashboard
+              ? "bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300 hover:text-amber-200"
+              : "bg-gray-500/20 hover:bg-amber-500/20 border-gray-500/40 hover:border-amber-500/40 text-gray-300 hover:text-amber-300"
+          } ${
+            isButtonDisabled()
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            {showProgressDashboard ? "Hide" : "Show"}
+          </span>
+        </button>
+      </div>
+    )}
+  </div>
 
-                {/* Second Row - View Progress Button and Enhanced Mode Toggle */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* View Progress Button */}
-                  {userId && userId !== "guest-user" && (
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/20">
-                      <div>
-                        <label className={`font-medium text-lg block transition-opacity duration-300 ${
-                          isButtonDisabled() ? 'text-white/50' : 'text-white/90'
-                        }`}>
-                          View Progress
-                        </label>
-                        <p className={`text-sm mt-1 transition-opacity duration-300 ${
-                          isButtonDisabled() ? 'text-white/40' : 'text-white/60'
-                        }`}>
-                          Show learning progress dashboard
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowProgressDashboard(!showProgressDashboard)}
-                        disabled={isButtonDisabled()}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                          showProgressDashboard
-                            ? 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300 hover:text-amber-200'
-                            : 'bg-gray-500/20 hover:bg-amber-500/20 border-gray-500/40 hover:border-amber-500/40 text-gray-300 hover:text-amber-300'
-                        } ${
-                          isButtonDisabled()
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                        }`}
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {showProgressDashboard ? 'Hide' : 'Show'}
-                        </span>
-                      </button>
-                    </div>
-                  )}
+  {/* Video Style Selection */}
+  <div className="mt-6">
+    <div className="p-4 bg-white/5 rounded-xl border border-white/20">
+      <div className="mb-4">
+        <label
+          className={`font-medium text-lg block transition-opacity duration-300 ${
+            isButtonDisabled() ? "text-white/50" : "text-white/90"
+          }`}
+        >
+          Video Generation Style
+        </label>
+        <p
+          className={`text-sm mt-1 transition-opacity duration-300 ${
+            isButtonDisabled() ? "text-white/40" : "text-white/60"
+          }`}
+        >
+          Choose the visual style for generated videos
+        </p>
+      </div>
 
-                  {/* Enhanced Mode Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/20">
-                    <div>
-                      <label className={`font-medium text-lg block transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/50' : 'text-white/90'
-                      }`}>
-                        Enhanced Mode
-                      </label>
-                      <p className={`text-sm mt-1 transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/40' : 'text-white/60'
-                      }`}>
-                        Use AI orchestration for personalized learning
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setUseOrchestration(!useOrchestration)}
-                      disabled={isButtonDisabled()}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                        useOrchestration ? "bg-amber-500" : "bg-gray-600"
-                      } ${
-                        isButtonDisabled()
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
-                          useOrchestration ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Realistic Style */}
+        <button
+          type="button"
+          onClick={() => setSelectedVideoStyle("realistic")}
+          disabled={isButtonDisabled()}
+          className={`p-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+            selectedVideoStyle === "realistic"
+              ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+              : "bg-gray-500/20 hover:bg-amber-500/10 border-gray-500/40 hover:border-amber-500/30 text-gray-300 hover:text-amber-300"
+          } ${
+            isButtonDisabled()
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
+          }`}
+        >
+          <div className="text-center">
+            <div className="text-lg font-medium">📷</div>
+            <div className="text-sm font-medium mt-1">Realistic</div>
+            <div className="text-xs mt-1 opacity-75">Photorealistic style</div>
+          </div>
+        </button>
 
-                {/* Video Style Selection */}
-                <div className="mt-6">
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/20">
-                    <div className="mb-4">
-                      <label className={`font-medium text-lg block transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/50' : 'text-white/90'
-                      }`}>
-                        Video Generation Style
-                      </label>
-                      <p className={`text-sm mt-1 transition-opacity duration-300 ${
-                        isButtonDisabled() ? 'text-white/40' : 'text-white/60'
-                      }`}>
-                        Choose the visual style for generated videos
-                      </p>
-                    </div>
+        {/* Artistic Style */}
+        <button
+          type="button"
+          onClick={() => setSelectedVideoStyle("artistic")}
+          disabled={isButtonDisabled()}
+          className={`p-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+            selectedVideoStyle === "artistic"
+              ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+              : "bg-gray-500/20 hover:bg-amber-500/10 border-gray-500/40 hover:border-amber-500/30 text-gray-300 hover:text-amber-300"
+          } ${
+            isButtonDisabled()
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
+          }`}
+        >
+          <div className="text-center">
+            <div className="text-lg font-medium">🎨</div>
+            <div className="text-sm font-medium mt-1">Artistic</div>
+            <div className="text-xs mt-1 opacity-75">Painterly style</div>
+          </div>
+        </button>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      {/* Realistic Style */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedVideoStyle('realistic')}
-                        disabled={isButtonDisabled()}
-                        className={`p-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                          selectedVideoStyle === 'realistic'
-                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                            : 'bg-gray-500/20 hover:bg-amber-500/10 border-gray-500/40 hover:border-amber-500/30 text-gray-300 hover:text-amber-300'
-                        } ${
-                          isButtonDisabled()
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-lg font-medium">📷</div>
-                          <div className="text-sm font-medium mt-1">Realistic</div>
-                          <div className="text-xs mt-1 opacity-75">Photorealistic style</div>
-                        </div>
-                      </button>
+        {/* Anime Style */}
+        <button
+          type="button"
+          onClick={() => setSelectedVideoStyle("anime")}
+          disabled={isButtonDisabled()}
+          className={`p-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+            selectedVideoStyle === "anime"
+              ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+              : "bg-gray-500/20 hover:bg-amber-500/10 border-gray-500/40 hover:border-amber-500/30 text-gray-300 hover:text-amber-300"
+          } ${
+            isButtonDisabled()
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
+          }`}
+        >
+          <div className="text-center">
+            <div className="text-lg font-medium">🎌</div>
+            <div className="text-sm font-medium mt-1">Anime</div>
+            <div className="text-xs mt-1 opacity-75">Japanese animation</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-                      {/* Artistic Style */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedVideoStyle('artistic')}
-                        disabled={isButtonDisabled()}
-                        className={`p-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                          selectedVideoStyle === 'artistic'
-                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                            : 'bg-gray-500/20 hover:bg-amber-500/10 border-gray-500/40 hover:border-amber-500/30 text-gray-300 hover:text-amber-300'
-                        } ${
-                          isButtonDisabled()
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-lg font-medium">🎨</div>
-                          <div className="text-sm font-medium mt-1">Artistic</div>
-                          <div className="text-xs mt-1 opacity-75">Painterly style</div>
-                        </div>
-                      </button>
-
-                      {/* Anime Style */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedVideoStyle('anime')}
-                        disabled={isButtonDisabled()}
-                        className={`p-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                          selectedVideoStyle === 'anime'
-                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                            : 'bg-gray-500/20 hover:bg-amber-500/10 border-gray-500/40 hover:border-amber-500/30 text-gray-300 hover:text-amber-300'
-                        } ${
-                          isButtonDisabled()
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-lg font-medium">🎌</div>
-                          <div className="text-sm font-medium mt-1">Anime</div>
-                          <div className="text-xs mt-1 opacity-75">Japanese animation</div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               <div className="flex justify-center mt-10 relative">
                 {/* Streaming Generation Button */}
@@ -1628,9 +1689,7 @@ export default function Subjects() {
                         {/* Content */}
                         <div className="relative z-10">
                           <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                            <p className="text-white/95 leading-relaxed text-lg font-medium">
-                              {subjectData.activity}
-                            </p>
+                            {renderActivityContent(subjectData.activity)}
                           </div>
 
                           {/* Action Hint */}
@@ -1677,9 +1736,7 @@ export default function Subjects() {
                         {/* Content */}
                         <div className="relative z-10">
                           <div className="bg-gradient-to-r from-white/5 to-white/10 rounded-2xl p-6 border border-white/10">
-                            <p className="text-white/95 leading-relaxed text-lg font-medium italic">
-                              "{subjectData.question}"
-                            </p>
+                            {renderQuestionContent(subjectData.question)}
                           </div>
 
                           {/* Thinking Prompt */}

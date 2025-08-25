@@ -70,15 +70,20 @@ export default function GlobalPinnedAvatar() {
     activeMainTab === "favorites" &&
     activeSettingsTab === "grid";
 
+  // Check if we're on mobile (window width <= 767px)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
+
   // Simplified logic: Show floating pinned avatar when:
   // - User is authenticated
   // - Pin mode is enabled
   // - We have an avatar to show (selected or fallback)
   // - We're NOT on the avatar-selection page with pin settings tab (to avoid duplication)
+  // - We're NOT on mobile (avatar now shows in mobile navbar)
   const shouldShowPinnedAvatar =
     isAuthenticated &&
     isPinModeEnabled &&
-    !isOnAvatarSelectionPinTab; // Only hide when on pin settings tab to avoid duplication
+    !isOnAvatarSelectionPinTab && // Only hide when on pin settings tab to avoid duplication
+    !isMobile; // Hide on mobile since avatar is now in mobile navbar
 
   // Show contained avatar when on Pin Mode tab (inside grid card)
   const shouldShowContainedAvatar =

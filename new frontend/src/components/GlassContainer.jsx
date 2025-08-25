@@ -24,14 +24,14 @@ export default function GlassContainer({
     ...style,
   };
   if (!noFixedHeight) {
-    containerStyle.height = "calc(100vh - 120px)";
-    containerStyle.maxHeight = "calc(100vh - 120px)";
-    containerStyle.overflow = "auto"; // Changed from "hidden" to "auto"
+    containerStyle.height = "calc(100dvh - 120px)";
+    containerStyle.maxHeight = "calc(100dvh - 120px)";
+    containerStyle.overflow = "auto"; // Allow scroll on smaller screens
   }
   return (
     <div className="w-full flex-1 flex items-start justify-center">
       <div
-        className={`w-full mx-auto rounded-3xl p-8 ${className}`}
+        className={`w-full mx-auto rounded-3xl p-4 sm:p-6 md:p-8 ${className}`}
         style={containerStyle}
         {...props}
       >

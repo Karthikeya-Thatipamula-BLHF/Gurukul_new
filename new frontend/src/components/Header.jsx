@@ -3,9 +3,10 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import gsap from "gsap";
 import { useGSAP } from "../hooks/useGSAP";
+import { Menu, X } from "lucide-react";
 import "../styles/header.css";
 
-export default function Header() {
+export default function Header({ onToggleSidebar, sidebarCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -239,7 +240,36 @@ export default function Header() {
 
   return (
     <header ref={headerRef} className="header glassy-header">
-      <div className="header-left">
+      <div className="header-left flex items-center">
+        {/* Show hamburger menu on desktop only, hidden on mobile since we have bottom navigation */}
+        <button
+          className="hidden md:block w-9 h-9 rounded-full bg-white/10 flex items-center justify-center mr-2"
+          onClick={() => {
+            // simple click feedback
+            if (onToggleSidebar) {
+              gsap.to(headerRef.current, {
+                scale: 0.99,
+                duration: 0.07,
+                ease: "power2.in",
+                onComplete: () => {
+                  gsap.to(headerRef.current, {
+                    scale: 1,
+                    duration: 0.1,
+                    ease: "power2.out",
+                  });
+                },
+              });
+              onToggleSidebar();
+            }
+          }}
+          aria-label="Toggle menu"
+        >
+          {sidebarCollapsed ? (
+            <Menu size={18} className="text-white" />
+          ) : (
+            <X size={18} className="text-white" />
+          )}
+        </button>
         <span
           ref={logoRef}
           className="logo hover-effect"
@@ -253,9 +283,9 @@ export default function Header() {
           ref={aboutLinkRef}
           to="/about"
           className={({ isActive }) =>
-            isActive
+            (isActive
               ? "about-link hover-effect active"
-              : "about-link hover-effect"
+              : "about-link hover-effect") + " hidden md:inline-flex"
           }
         >
           <span>About</span>
@@ -265,7 +295,7 @@ export default function Header() {
           className="logout-btn hover-effect"
           onClick={handleLogout}
         >
-          <span className="logout-text">
+          <span className="logout-text hidden sm:inline">
             <span>Sign Out</span>
           </span>
           {avatarUrl && (

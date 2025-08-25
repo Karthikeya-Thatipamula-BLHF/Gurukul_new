@@ -398,7 +398,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
     <aside
       ref={sidebarRef}
       className={`transition-all duration-300 ease-in-out ${
-        collapsed ? "w-full mx-auto my-0 rounded-b-2xl" : "h-auto rounded-2xl"
+        collapsed ? "w-full mx-auto my-0 rounded-b-2xl sticky z-40" : "h-auto rounded-2xl"
       }`}
       style={{
         marginTop: collapsed ? 0 : "1.3rem",
@@ -414,11 +414,12 @@ export default function Sidebar({ collapsed = false, onToggle }) {
           : "0 8px 32px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(255, 215, 0, 0.05) inset",
         display: "flex",
         flexDirection: collapsed ? "row" : "column",
-        justifyContent: collapsed ? "center" : "flex-start",
+        justifyContent: collapsed ? "flex-start" : "flex-start",
         width: collapsed ? "100%" : "100%",
         maxWidth: collapsed ? "100%" : "100%",
         height: collapsed ? "auto" : "auto",
-        padding: collapsed ? "0.25rem 0" : "0",
+        padding: collapsed ? "0.35rem 0.25rem" : "0",
+        top: collapsed ? "var(--header-h)" : undefined,
       }}
     >
       {/* Sidebar Content */}
@@ -486,7 +487,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
           <ul
             className={`${
               collapsed
-                ? "px-2 flex flex-row items-center justify-center space-x-4"
+                ? "px-2 flex flex-row items-center justify-start space-x-2 overflow-x-auto snap-x snap-mandatory whitespace-nowrap"
                 : "px-3 space-y-2"
             }`}
           >
@@ -500,7 +501,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
                     to={item.href}
                     className={`
                       flex items-center rounded-lg
-                      ${collapsed ? "py-1 px-2" : "py-3 pl-4 pr-4"}
+                      ${collapsed ? "py-2 px-3 mr-1 snap-start shrink-0" : "py-3 pl-4 pr-4"}
                       text-white/90
                       ${isActive ? "active-menu-item font-medium" : ""}
                     `}
@@ -518,7 +519,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
                     onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
                     onClick={(e) => handleClick(e.currentTarget)}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <Icon className="w-6 h-6 md:w-5 md:h-5 flex-shrink-0" />
                     {!collapsed && (
                       <span className="ml-3 truncate">{t(item.label)}</span>
                     )}
@@ -548,7 +549,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
           <ul
             className={`${
               collapsed
-                ? "px-2 flex flex-row items-center justify-center space-x-4"
+                ? "px-2 flex flex-row items-center justify-start space-x-2 overflow-x-auto snap-x snap-mandatory whitespace-nowrap"
                 : "px-3 space-y-2"
             }`}
           >
@@ -558,7 +559,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
                 to="/settings"
                 className={`
                   flex items-center rounded-lg
-                  ${collapsed ? "py-1 px-2" : "py-3 pl-4 pr-4"}
+                  ${collapsed ? "py-2 px-3 mr-1 snap-start shrink-0" : "py-3 pl-4 pr-4"}
                   text-white/90
                   ${
                     location.pathname === "/settings"
@@ -581,7 +582,7 @@ export default function Sidebar({ collapsed = false, onToggle }) {
                 onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
                 onClick={(e) => handleClick(e.currentTarget)}
               >
-                <Settings className="w-5 h-5 flex-shrink-0" />
+                <Settings className="w-6 h-6 md:w-5 md:h-5 flex-shrink-0" />
                 {!collapsed && (
                   <span className="ml-3 truncate">{t("Settings")}</span>
                 )}
